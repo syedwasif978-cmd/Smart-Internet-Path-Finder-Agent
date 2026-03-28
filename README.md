@@ -125,6 +125,27 @@ The system behaves as an intelligent agent by:
 - Dynamic edge colors (green = low traffic, red = high traffic)
 
 ---
+## 📡 API Design (FastAPI)
+
+### Endpoint: `/find-path`
+
+#### Request
+```json
+{
+  "start": "A",
+  "goal": "D"
+}
+```
+#### Response:
+```json
+{
+  "path": ["A", "B", "C", "D"],
+  "cost": 8,
+  "nodes_explored": 12
+}
+```
+---
+
 ## 📁 Project Structure
 
 <pre>

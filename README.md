@@ -122,61 +122,62 @@ The system behaves as an intelligent agent by:
 - Display:
   - Path cost  
   - Nodes explored  
-- Dynamic edge colors (green = low traffic, red = high traffic)  
+- Dynamic edge colors (green = low traffic, red = high traffic)
 
 ---
-
 ## 📁 Project Structure
 
+<pre>
 smart-office-routing-agent/
 │
-├── backend/                     # FastAPI backend
-│   ├── main.py                   # Entry point for FastAPI app
+├── backend/                         # FastAPI backend
+│   ├── main.py                       # Entry point for FastAPI app
 │   ├── routers/
-│   │   └── pathfinder.py         # /find-path endpoint logic
+│   │   └── pathfinder.py             # /find-path endpoint logic
 │   ├── services/
-│   │   ├── graph.py              # Graph structure (routers, floors, edges)
+│   │   ├── graph.py                  # Graph structure (routers, floors, edges)
 │   │   ├── algorithms/
 │   │   │   ├── bfs.py
 │   │   │   ├── dfs.py
 │   │   │   ├── ucs.py
 │   │   │   └── astar.py
-│   │   └── traffic.py            # Reinforcement + decay traffic update logic
+│   │   └── traffic.py                # Reinforcement + decay traffic update logic
 │   ├── models/
-│   │   └── request_models.py     # Pydantic schemas for requests/responses
+│   │   └── request_models.py         # Pydantic schemas for requests/responses
 │   ├── data/
-│   │   └── network.json          # Initial office network graph (routers, connections, weights)
+│   │   └── network.json              # Initial office network graph (routers, connections, weights)
 │   └── utils/
-│       └── heuristic.py          # Heuristic functions for A* (e.g., floor distance)
+│       └── heuristic.py              # Heuristic functions for A* (e.g., floor distance)
 │
-├── frontend/                     # React frontend
+├── frontend/                         # React frontend
 │   ├── public/
 │   │   └── index.html
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── GraphView.jsx     # Visualizes routers + traffic density
-│   │   │   ├── RouterSelector.jsx# Source/destination dropdowns
-│   │   │   └── ResultPanel.jsx   # Shows path, cost, nodes explored
+│   │   │   ├── GraphView.jsx         # Visualizes routers + traffic density
+│   │   │   ├── RouterSelector.jsx    # Source/destination dropdowns
+│   │   │   └── ResultPanel.jsx       # Shows path, cost, nodes explored
 │   │   ├── pages/
-│   │   │   └── Home.jsx          # Main simulation page
+│   │   │   └── Home.jsx              # Main simulation page
 │   │   ├── services/
-│   │   │   └── api.js            # Axios calls to FastAPI backend
+│   │   │   └── api.js                # Axios calls to FastAPI backend
 │   │   ├── utils/
-│   │   │   └── graphUtils.js     # Graph rendering helpers
+│   │   │   └── graphUtils.js         # Graph rendering helpers
 │   │   └── App.jsx
 │   └── package.json
 │
-├── docs/                         # Documentation
-│   ├── project_report.md          # 4–6 page report (problem, algorithms, agent design, APIs)
+├── docs/                             # Documentation
+│   ├── project_report.md              # 4–6 page report (problem, algorithms, agent design, APIs)
 │   ├── architecture_diagram.png
-│   └── traffic_update_logic.md    # Explanation of reinforcement + decay method
+│   └── traffic_update_logic.md        # Explanation of reinforcement + decay method
 │
-├── tests/                        # Testing
-│   ├── test_algorithms.py         # Unit tests for BFS, DFS, UCS, A*
-│   ├── test_traffic.py            # Tests for traffic update logic
-│   └── test_api.py                # Endpoint tests
+├── tests/                            # Testing
+│   ├── test_algorithms.py             # Unit tests for BFS, DFS, UCS, A*
+│   ├── test_traffic.py                # Tests for traffic update logic
+│   └── test_api.py                    # Endpoint tests
 │
-├── Dockerfile                     # Containerize backend
-├── docker-compose.yml             # Combine backend + frontend
-└── README.md                      # Setup + usage instructions
+├── Dockerfile                         # Containerize backend
+├── docker-compose.yml                 # Combine backend + frontend
+└── README.md                          # Setup + usage instructions
 
+</pre>

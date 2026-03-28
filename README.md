@@ -119,51 +119,20 @@ The system behaves as an intelligent agent by:
   - Nodes explored  
 
 ---
-🧭 Swimlane Diagram
+🧭 Basic Workflow E2E
 
-flowchart LR
 
-    subgraph User
-        U1[Enter Source & Destination]
-    end
 
-    subgraph Agent
-        A1[Receive Input]
-        A2[Define Goal]
-    end
+    User --> Agent
+    Agent --> Decision
+    Decision -->|No| BFS
+    Decision -->|Yes| AStar
+    BFS --> Algorithm
+    AStar --> Algorithm
+    Algorithm --> Graph
+    Graph --> Output
+    Output --> GUI
 
-    subgraph Decision_Module
-        D1{Weighted Graph?}
-        D2[Select BFS]
-        D3[Select A*]
-    end
-
-    subgraph Algorithm
-        ALG1[Execute Search]
-    end
-
-    subgraph Graph
-        G1[Network Graph Traversal]
-    end
-
-    subgraph System_Output
-        O1[Generate Path + Cost]
-    end
-
-    subgraph GUI
-        UI1[Display Result]
-    end
-
-    U1 --> A1
-    A1 --> A2
-    A2 --> D1
-    D1 -- No --> D2
-    D1 -- Yes --> D3
-    D2 --> ALG1
-    D3 --> ALG1
-    ALG1 --> G1
-    G1 --> O1
-    O1 --> UI1
 
 -----
 

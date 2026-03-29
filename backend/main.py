@@ -27,13 +27,20 @@ def health_check():
 
 # Serve React build folder as static files
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "build")
+print(f"DEBUG: Looking for static files in: {STATIC_DIR}")
+print(f"DEBUG: Static dir exists: {os.path.exists(STATIC_DIR)}")
+
 if os.path.exists(STATIC_DIR):
+    print(f"DEBUG: Mounting static files from {STATIC_DIR}")
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+else:
+    print(f"WARNING: Static directory not found at {STATIC_DIR}")
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=False)
+
 
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "/api";
 const algorithms = ["auto", "bfs", "dfs", "ucs", "astar"];
 
 function weightColor(weight) {

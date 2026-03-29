@@ -119,26 +119,59 @@ The agent dynamically selects the appropriate algorithm and adapts to changing n
 
 ---
 
-## ▶️ Quick start
+## ▶️ Quick Start
 
-### Backend
-1. `cd backend`
-2. `pip install -r ../requirements.txt`
-3. `uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000`
+### 🚀 Integrated Single-Link Startup
 
-### Frontend
-1. `cd frontend`
-2. `npm install`
-3. `npm start`
+The entire application (frontend + backend) runs from **one command** on a single port:
 
-### API usage
-- `GET /health`
-- `GET /nodes`
-- `GET /graph`
-- `POST /find-path` with JSON body:
+#### Windows
+```bash
+START.bat
+```
+
+#### Mac/Linux
+```bash
+bash START.sh
+```
+
+#### Direct Python
+```bash
+python run.py
+```
+
+✅ Access the app at: **`http://localhost:8000`**
+
+---
+
+### 📡 API Endpoints (for testing/integration)
+- `GET /api/health`
+- `GET /api/nodes`
+- `GET /api/graph`
+- `POST /api/find-path` with JSON body:
   - `{ "start": "A", "goal": "Goal", "algorithm": "auto" }`
 
+---
 
+### 🔧 Manual Development Setup
+
+If you prefer to run backend and frontend separately:
+
+**Backend:**
+```bash
+cd backend
+pip install -r ../requirements.txt
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Frontend (separate terminal):**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+---
 
 ## 🚦 Dynamic Network Simulation
 - Edge weights change dynamically to simulate traffic/congestion.  

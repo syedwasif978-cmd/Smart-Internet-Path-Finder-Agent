@@ -14,13 +14,15 @@ FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
 FRONTEND_BUILD = os.path.join(FRONTEND_DIR, "build")
 
 
-def run_command(cmd, cwd=None, shell=False):
+def run_command(cmd, cwd=None, shell=False, input_text=None):
     """Run a shell command and return success status."""
     print(f"\n{'='*60}")
     print(f"Running: {cmd}")
     print(f"{'='*60}\n")
     try:
-        result = subprocess.run(cmd, cwd=cwd, shell=shell, check=True)
+        result = subprocess.run(
+            cmd, cwd=cwd, shell=shell, check=True, input=input_text, text=True
+        )
         return True
     except subprocess.CalledProcessError as e:
         print(f"\n❌ Command failed: {cmd}")
@@ -48,7 +50,7 @@ def setup_and_run():
 
     # Step 3: Build React frontend
     print("\n🏗️  Step 3: Building React frontend...")
-    if not run_command("npm run build", cwd=FRONTEND_DIR, shell=True):
+    if not run_command("npm run build", cwd=FRONTEND_DIR, shell=True, input_text="Y\n"):
         return False
 
     if not os.path.exists(FRONTEND_BUILD):

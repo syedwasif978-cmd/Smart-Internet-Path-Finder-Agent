@@ -1,0 +1,16 @@
+{
+  "name": "smart-internet-path-finder-ui",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.5.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false",
+    "eject": "react-scripts eject"
+  }
+}

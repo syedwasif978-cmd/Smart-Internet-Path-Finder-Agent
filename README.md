@@ -119,6 +119,27 @@ The agent dynamically selects the appropriate algorithm and adapts to changing n
 
 ---
 
+## ▶️ Quick start
+
+### Backend
+1. `cd backend`
+2. `pip install -r ../requirements.txt`
+3. `uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000`
+
+### Frontend
+1. `cd frontend`
+2. `npm install`
+3. `npm start`
+
+### API usage
+- `GET /health`
+- `GET /nodes`
+- `GET /graph`
+- `POST /find-path` with JSON body:
+  - `{ "start": "A", "goal": "Goal", "algorithm": "auto" }`
+
+
+
 ## 🚦 Dynamic Network Simulation
 - Edge weights change dynamically to simulate traffic/congestion.  
 - After each request:

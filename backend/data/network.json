@@ -1,0 +1,53 @@
+{
+  "nodes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "Goal"
+  ],
+  "edges": [
+    {
+      "from": "A",
+      "to": "B",
+      "weight": 1.7999999999999998
+    },
+    {
+      "from": "A",
+      "to": "D",
+      "weight": 3.8
+    },
+    {
+      "from": "B",
+      "to": "C",
+      "weight": 2.8
+    },
+    {
+      "from": "B",
+      "to": "E",
+      "weight": 4.600000000000001
+    },
+    {
+      "from": "C",
+      "to": "Goal",
+      "weight": 4.800000000000001
+    },
+    {
+      "from": "D",
+      "to": "E",
+      "weight": 2.0
+    },
+    {
+      "from": "E",
+      "to": "F",
+      "weight": 2.8
+    },
+    {
+      "from": "F",
+      "to": "Goal",
+      "weight": 2.8
+    }
+  ]
+}

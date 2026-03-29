@@ -59,3 +59,14 @@ def find_path(request: FindPathRequest):
         nodes_explored=nodes_explored,
         message="Path computed and traffic updated",
     )
+
+
+@router.get("/nodes")
+def get_nodes():
+    return graph.nodes()
+
+
+@router.get("/graph")
+def get_graph():
+    return graph.adjacency
+

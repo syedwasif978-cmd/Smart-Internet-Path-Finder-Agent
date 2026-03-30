@@ -11,7 +11,7 @@ function BuildingVisualization({ graph, result, start, goal }) {
       label: "Floor 4 (Executives)",
       emoji: "👔",
       routers: ["G", "H"],
-      yStart: 120,
+      yStart: 80,
     },
     {
       floor: 3,
@@ -25,21 +25,21 @@ function BuildingVisualization({ graph, result, start, goal }) {
       label: "Floor 2 (Development)",
       emoji: "💻",
       routers: ["B", "C", "I", "J"],
-      yStart: 480,
+      yStart: 520,
     },
     {
       floor: 1,
       label: "Floor 1 (Open Space)",
       emoji: "👥",
       routers: ["A", "K", "L"],
-      yStart: 660,
+      yStart: 740,
     },
     {
       floor: 0,
       label: "Server Room",
       emoji: "🖥️",
       routers: ["Goal"],
-      yStart: 800,
+      yStart: 930,
     },
   ];
 
@@ -73,51 +73,51 @@ function BuildingVisualization({ graph, result, start, goal }) {
       <g>
         {/* Antenna 1 */}
         <line
-          x1={cx - 12}
-          y1={cy - 15}
-          x2={cx - 15}
-          y2={cy - 25}
+          x1={cx - 16}
+          y1={cy - 20}
+          x2={cx - 20}
+          y2={cy - 35}
           stroke={isInPath ? "#4caf50" : getTrafficColor(trafficLevel)}
-          strokeWidth="2"
+          strokeWidth="3"
           className={isActive ? "antenna-pulse" : ""}
         />
         {/* Antenna 2 */}
         <line
-          x1={cx + 12}
-          y1={cy - 15}
-          x2={cx + 15}
-          y2={cy - 25}
+          x1={cx + 16}
+          y1={cy - 20}
+          x2={cx + 20}
+          y2={cy - 35}
           stroke={isInPath ? "#4caf50" : getTrafficColor(trafficLevel)}
-          strokeWidth="2"
+          strokeWidth="3"
           className={isActive ? "antenna-pulse" : ""}
         />
         {/* Router body */}
         <rect
-          x={cx - 16}
-          y={cy - 12}
-          width="32"
-          height="24"
-          rx="4"
+          x={cx - 22}
+          y={cy - 16}
+          width="44"
+          height="32"
+          rx="5"
           fill={isInPath ? "#81c784" : "#e8f5e9"}
           stroke={isInPath ? "#4caf50" : getTrafficColor(trafficLevel)}
-          strokeWidth={isActive ? 3 : 2}
+          strokeWidth={isActive ? 4 : 3}
           className={isActive ? "router-glow" : ""}
         />
         {/* Router lights (indicator) */}
-        <circle cx={cx - 8} cy={cy - 4} r="2" fill="#4caf50" opacity="0.8" />
-        <circle cx={cx + 8} cy={cy - 4} r="2" fill={getTrafficColor(trafficLevel)} opacity="0.8" />
+        <circle cx={cx - 10} cy={cy - 4} r="3" fill="#4caf50" opacity="0.8" />
+        <circle cx={cx + 10} cy={cy - 4} r="3" fill={getTrafficColor(trafficLevel)} opacity="0.8" />
         {/* WiFi symbol */}
         <path
-          d={`M ${cx} ${cy + 8} Q ${cx - 4} ${cy + 12} ${cx - 6} ${cy + 14}`}
+          d={`M ${cx} ${cy + 10} Q ${cx - 5} ${cy + 15} ${cx - 8} ${cy + 18}`}
           fill="none"
           stroke={isInPath ? "#4caf50" : "#2d7a3e"}
-          strokeWidth="1.5"
+          strokeWidth="2"
         />
         <path
-          d={`M ${cx} ${cy + 8} Q ${cx + 4} ${cy + 12} ${cx + 6} ${cy + 14}`}
+          d={`M ${cx} ${cy + 10} Q ${cx + 5} ${cy + 15} ${cx + 8} ${cy + 18}`}
           fill="none"
           stroke={isInPath ? "#4caf50" : "#2d7a3e"}
-          strokeWidth="1.5"
+          strokeWidth="2"
         />
       </g>
     );
@@ -127,7 +127,7 @@ function BuildingVisualization({ graph, result, start, goal }) {
     <div className="building-visualization">
       <div className="panel-header">🏢 Office Building Network</div>
 
-      <svg className="building-svg" viewBox="0 0 1000 900">
+      <svg className="building-svg" viewBox="0 0 1300 1250">
         <defs>
           <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" style={{ stopColor: "#d4edda", stopOpacity: 0.9 }} />
@@ -149,30 +149,30 @@ function BuildingVisualization({ graph, result, start, goal }) {
         </defs>
 
         {/* Building base */}
-        <rect x="150" y="50" width="700" height="750" rx="15" fill="url(#buildingGrad)" stroke="#4caf50" strokeWidth="3" />
+        <rect x="160" y="60" width="980" height="1130" rx="20" fill="url(#buildingGrad)" stroke="#4caf50" strokeWidth="4" />
 
         {/* Building outline */}
-        <rect x="160" y="60" width="680" height="730" rx="12" fill="none" stroke="#81c784" strokeWidth="2" opacity="0.6" />
+        <rect x="190" y="80" width="920" height="1080" rx="15" fill="none" stroke="#81c784" strokeWidth="3" opacity="0.6" />
 
         {/* Floors with offices and routers */}
         {floors.map((floorData, idx) => (
           <g key={idx}>
-            {/* Floor background/separator */}
+            {/* Floor separator line */}
             {idx < floors.length - 1 && (
               <>
                 <line
-                  x1="160"
-                  y1={floorData.yStart + 140}
-                  x2="840"
-                  y2={floorData.yStart + 140}
+                  x1="190"
+                  y1={floorData.yStart + 220}
+                  x2="1090"
+                  y2={floorData.yStart + 220}
                   stroke="#a5d6a7"
-                  strokeWidth="2"
+                  strokeWidth="3"
                   opacity="0.4"
                 />
                 <rect
-                  x="150"
-                  y={floorData.yStart + 140}
-                  width="700"
+                  x="175"
+                  y={floorData.yStart + 220}
+                  width="930"
                   height="2"
                   fill="#81c784"
                   opacity="0.3"
@@ -185,43 +185,45 @@ function BuildingVisualization({ graph, result, start, goal }) {
               <g key={w}>
                 {/* Window */}
                 <rect
-                  x={180 + w * 90}
-                  y={floorData.yStart + 20}
-                  width="70"
-                  height="50"
-                  rx="3"
+                  x={200 + w * 126}
+                  y={floorData.yStart + 15}
+                  width="100"
+                  height="75"
+                  rx="4"
                   fill="url(#windowGrad)"
                   stroke="#4caf50"
-                  strokeWidth="1"
+                  strokeWidth="2"
                   opacity="0.6"
                 />
                 {/* Window panes */}
                 <line
-                  x1={180 + w * 90 + 35}
-                  y1={floorData.yStart + 20}
-                  x2={180 + w * 90 + 35}
-                  y2={floorData.yStart + 70}
+                  x1={200 + w * 126 + 50}
+                  y1={floorData.yStart + 15}
+                  x2={200 + w * 126 + 50}
+                  y2={floorData.yStart + 90}
                   stroke="#4caf50"
-                  strokeWidth="0.5"
+                  strokeWidth="1"
                   opacity="0.4"
                 />
               </g>
             ))}
 
             {/* Floor label */}
-            <rect x="50" y={floorData.yStart + 20} width="80" height="100" rx="8" fill="#c8e6c9" stroke="#4caf50" strokeWidth="2" />
-            <text x="90" y={floorData.yStart + 45} fontSize="16" fontWeight="bold" fill="#2d7a3e" textAnchor="middle">
+            <rect x="30" y={floorData.yStart + 5} width="120" height="210" rx="10" fill="#c8e6c9" stroke="#4caf50" strokeWidth="3" />
+            <text x="90" y={floorData.yStart + 50} fontSize="22" fontWeight="bold" fill="#2d7a3e" textAnchor="middle">
               F{floorData.floor}
             </text>
-            <text x="90" y={floorData.yStart + 75} fontSize="28" textAnchor="middle">
+            <text x="90" y={floorData.yStart + 110} fontSize="42" textAnchor="middle">
               {floorData.emoji}
             </text>
 
             {/* Routers on this floor */}
             {floorData.routers.map((router, routerIdx) => {
               const totalRouters = floorData.routers.length;
-              const spacing = 500 / (totalRouters + 1);
-              const xPos = 250 + (routerIdx + 1) * spacing;
+              // Calculate spacing based on number of routers per floor
+              const spacing = totalRouters === 2 ? 250 : totalRouters === 3 ? 200 : 160;
+              const startX = totalRouters === 2 ? 400 : totalRouters === 3 ? 370 : 340;
+              const xPos = startX + routerIdx * spacing;
               const trafficLevel = getTrafficLevel(router);
               const isInPath = isNodeInPath(router);
               const isHighlighted = isHighlightedNode(router);
@@ -230,31 +232,32 @@ function BuildingVisualization({ graph, result, start, goal }) {
                 <g key={router}>
                   {/* Halo effect */}
                   {isHighlighted && (
-                    <circle cx={xPos} cy={floorData.yStart + 90} r="55" fill="none" stroke="#4caf50" strokeWidth="2" opacity="0.2" className="router-halo" />
+                    <circle cx={xPos} cy={floorData.yStart + 130} r="65" fill="none" stroke="#4caf50" strokeWidth="3" opacity="0.2" className="router-halo" />
                   )}
 
                   {/* Office/desk indicator */}
                   <rect
-                    x={xPos - 35}
-                    y={floorData.yStart + 60}
-                    width="70"
-                    height="60"
-                    rx="4"
-                    fill={isInPath ? "rgba(129, 199, 132, 0.2)" : "rgba(232, 245, 242, 0.5)"}
-                    stroke={isInPath ? "#4caf50" : "#a5d6a7"}
-                    strokeWidth="1"
+                    x={xPos - 42}
+                    y={floorData.yStart + 90}
+                    width="84"
+                    height="80"
+                    rx="5"
+                    fill="#ffffff"
+                    stroke={isInPath ? "#4caf50" : "#c8e6c9"}
+                    strokeWidth="2"
+                    opacity="0.95"
                   />
 
                   {/* Router icon */}
-                  <RouterIcon cx={xPos} cy={floorData.yStart + 80} isActive={isHighlighted} isInPath={isInPath} trafficLevel={trafficLevel} />
+                  <RouterIcon cx={xPos} cy={floorData.yStart + 120} isActive={isHighlighted} isInPath={isInPath} trafficLevel={trafficLevel} />
 
                   {/* Router label */}
-                  <text x={xPos} y={floorData.yStart + 130} fontSize="13" fill="#2d3436" textAnchor="middle" fontWeight="700">
+                  <text x={xPos} y={floorData.yStart + 190} fontSize="18" fill="#2d3436" textAnchor="middle" fontWeight="700">
                     {router}
                   </text>
 
                   {/* Path indicator star */}
-                  {isInPath && <text x={xPos - 25} y={floorData.yStart + 65} fontSize="16" fill="#ffc107" className="path-star">
+                  {isInPath && <text x={xPos - 30} y={floorData.yStart + 95} fontSize="20" fill="#ffc107" className="path-star">
                     ⭐
                   </text>}
 
@@ -262,27 +265,27 @@ function BuildingVisualization({ graph, result, start, goal }) {
                   {hoveredRouter === router && (
                     <g>
                       <rect
-                        x={xPos - 55}
-                        y={floorData.yStart - 50}
-                        width="110"
-                        height="45"
-                        rx="6"
+                        x={xPos - 70}
+                        y={floorData.yStart - 70}
+                        width="140"
+                        height="60"
+                        rx="8"
                         fill="#ffffff"
                         stroke="#4caf50"
                         strokeWidth="2"
                         filter="drop-shadow(0 4px 8px rgba(0,0,0,0.2))"
                       />
-                      <text x={xPos} y={floorData.yStart - 35} fontSize="13" fontWeight="bold" fill="#2d7a3e" textAnchor="middle">
+                      <text x={xPos} y={floorData.yStart - 45} fontSize="16" fontWeight="bold" fill="#2d7a3e" textAnchor="middle">
                         {router}
                       </text>
-                      <text x={xPos} y={floorData.yStart - 18} fontSize="11" fill="#4caf50" textAnchor="middle">
+                      <text x={xPos} y={floorData.yStart - 23} fontSize="14" fill="#4caf50" textAnchor="middle">
                         {trafficLevel === "high" ? "🔴 High" : trafficLevel === "medium" ? "🟠 Med" : "🟢 Low"}
                       </text>
                     </g>
                   )}
 
                   {/* Interactive area */}
-                  <circle cx={xPos} cy={floorData.yStart + 80} r="22" fill="transparent" style={{ cursor: "pointer" }} onMouseEnter={() => setHoveredRouter(router)} onMouseLeave={() => setHoveredRouter(null)} />
+                  <circle cx={xPos} cy={floorData.yStart + 120} r="28" fill="transparent" style={{ cursor: "pointer" }} onMouseEnter={() => setHoveredRouter(router)} onMouseLeave={() => setHoveredRouter(null)} />
                 </g>
               );
             })}
@@ -290,11 +293,11 @@ function BuildingVisualization({ graph, result, start, goal }) {
         ))}
 
         {/* Building entrance */}
-        <rect x="420" y="800" width="160" height="70" rx="8" fill="#a5d6a7" stroke="#4caf50" strokeWidth="2" />
-        <text x="500" y="825" fontSize="28" textAnchor="middle" dominantBaseline="middle">
+        <rect x="540" y="1050" width="220" height="90" rx="10" fill="#a5d6a7" stroke="#4caf50" strokeWidth="3" />
+        <text x="650" y="1080" fontSize="36" textAnchor="middle" dominantBaseline="middle">
           🚪
         </text>
-        <text x="500" y="855" fontSize="11" textAnchor="middle" fill="#2d7a3e" fontWeight="600">
+        <text x="650" y="1125" fontSize="16" textAnchor="middle" fill="#2d7a3e" fontWeight="600">
           Entrance
         </text>
       </svg>

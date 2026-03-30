@@ -8,7 +8,7 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 400 });
 
-  // Initialize positions for nodes in a circle layout
+  // Initialize positions for nodes with better spread
   useEffect(() => {
     if (nodes.length === 0) return;
 
@@ -28,15 +28,33 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     const height = canvas.height;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 3;
-
+    
+    // Calculate radius based on canvas size
+    const maxRadius = Math.min(width, height) / 2.5;
+    
     const newPositions = {};
     nodes.forEach((node, idx) => {
-      const angle = (idx / nodes.length) * Math.PI * 2;
-      newPositions[node] = {
-        x: centerX + Math.cos(angle) * radius,
-        y: centerY + Math.sin(angle) * radius,
-      };
+      // Use golden angle for better distribution
+      const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~2.39996
+      const angle = idx * goldenAngle;
+      
+      // Use square root for even area distribution
+      const radius = maxRadius * Math.sqrt(idx / nodes.length);
+      
+      let x = centerX + Math.cos(angle) * radius;
+      let y = centerY + Math.sin(angle) * radius;
+      
+      // Add small random offset for visual variety
+      const randomOffset = 15;
+      x += (Math.random() - 0.5) * randomOffset;
+      y += (Math.random() - 0.5) * randomOffset;
+      
+      // Ensure point is within canvas bounds with margin
+      const margin = 50;
+      x = Math.max(margin, Math.min(width - margin, x));
+      y = Math.max(margin, Math.min(height - margin, y));
+
+      newPositions[node] = { x, y };
     });
 
     setPositions(newPositions);

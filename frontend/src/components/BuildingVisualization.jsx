@@ -53,6 +53,15 @@ function BuildingVisualization({ graph, result, start, goal }) {
     return "high";
   };
 
+  const getTrafficPercentage = (node) => {
+    if (!graph[node]) return 0;
+    const weights = Object.values(graph[node]);
+    if (weights.length === 0) return 0;
+    const avgWeight = weights.reduce((a, b) => a + b, 0) / weights.length;
+    // Convert weight to percentage (assuming max weight ~10)
+    return Math.min(100, Math.round((avgWeight / 10) * 100));
+  };
+
   const isNodeInPath = (node) => {
     return result && result.path && result.path.includes(node);
   };
@@ -63,7 +72,7 @@ function BuildingVisualization({ graph, result, start, goal }) {
   };
 
   const getTrafficColor = (level) => {
-    const colors = { low: "#4caf50", medium: "#ffc107", high: "#f44336" };
+    const colors = { low: "#2d8659", medium: "#ffc107", high: "#f44336" };
     return colors[level] || colors.low;
   };
 
@@ -77,7 +86,7 @@ function BuildingVisualization({ graph, result, start, goal }) {
           y1={cy - 20}
           x2={cx - 20}
           y2={cy - 35}
-          stroke={isInPath ? "#4caf50" : getTrafficColor(trafficLevel)}
+          stroke={isInPath ? "#2d8659" : getTrafficColor(trafficLevel)}
           strokeWidth="3"
           className={isActive ? "antenna-pulse" : ""}
         />
@@ -87,7 +96,7 @@ function BuildingVisualization({ graph, result, start, goal }) {
           y1={cy - 20}
           x2={cx + 20}
           y2={cy - 35}
-          stroke={isInPath ? "#4caf50" : getTrafficColor(trafficLevel)}
+          stroke={isInPath ? "#2d8659" : getTrafficColor(trafficLevel)}
           strokeWidth="3"
           className={isActive ? "antenna-pulse" : ""}
         />
@@ -98,25 +107,25 @@ function BuildingVisualization({ graph, result, start, goal }) {
           width="44"
           height="32"
           rx="5"
-          fill={isInPath ? "#81c784" : "#e8f5e9"}
-          stroke={isInPath ? "#4caf50" : getTrafficColor(trafficLevel)}
+          fill={isInPath ? "#a8d5ba" : "#e8f5f0"}
+          stroke={isInPath ? "#2d8659" : getTrafficColor(trafficLevel)}
           strokeWidth={isActive ? 4 : 3}
           className={isActive ? "router-glow" : ""}
         />
         {/* Router lights (indicator) */}
-        <circle cx={cx - 10} cy={cy - 4} r="3" fill="#4caf50" opacity="0.8" />
+        <circle cx={cx - 10} cy={cy - 4} r="3" fill="#2d8659" opacity="0.8" />
         <circle cx={cx + 10} cy={cy - 4} r="3" fill={getTrafficColor(trafficLevel)} opacity="0.8" />
         {/* WiFi symbol */}
         <path
           d={`M ${cx} ${cy + 10} Q ${cx - 5} ${cy + 15} ${cx - 8} ${cy + 18}`}
           fill="none"
-          stroke={isInPath ? "#4caf50" : "#2d7a3e"}
+          stroke={isInPath ? "#2d8659" : "#1a4d32"}
           strokeWidth="2"
         />
         <path
           d={`M ${cx} ${cy + 10} Q ${cx + 5} ${cy + 15} ${cx + 8} ${cy + 18}`}
           fill="none"
-          stroke={isInPath ? "#4caf50" : "#2d7a3e"}
+          stroke={isInPath ? "#2d8659" : "#1a4d32"}
           strokeWidth="2"
         />
       </g>
@@ -129,9 +138,10 @@ function BuildingVisualization({ graph, result, start, goal }) {
 
       <svg className="building-svg" viewBox="0 0 1300 1250">
         <defs>
-          <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style={{ stopColor: "#d4edda", stopOpacity: 0.9 }} />
-            <stop offset="100%" style={{ stopColor: "#c3e6cb", stopOpacity: 0.9 }} />
+          <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: "#d0ebe4", stopOpacity: 0.95 }} />
+            <stop offset="50%" style={{ stopColor: "#a8d5ba", stopOpacity: 0.95 }} />
+            <stop offset="100%" style={{ stopColor: "#d0ebe4", stopOpacity: 0.95 }} />
           </linearGradient>
 
           <filter id="glow">
@@ -143,16 +153,19 @@ function BuildingVisualization({ graph, result, start, goal }) {
           </filter>
 
           <linearGradient id="windowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: "#b3e5fc", stopOpacity: 0.4 }} />
-            <stop offset="100%" style={{ stopColor: "#81d4fa", stopOpacity: 0.6 }} />
+            <stop offset="0%" style={{ stopColor: "#a8d5ba", stopOpacity: 0.5 }} />
+            <stop offset="100%" style={{ stopColor: "#7fc9a8", stopOpacity: 0.7 }} />
           </linearGradient>
         </defs>
 
         {/* Building base */}
-        <rect x="160" y="60" width="980" height="1130" rx="20" fill="url(#buildingGrad)" stroke="#4caf50" strokeWidth="4" />
+        <rect x="160" y="60" width="980" height="1130" rx="20" fill="url(#buildingGrad)" stroke="#2d8659" strokeWidth="4" />
 
-        {/* Building outline */}
-        <rect x="190" y="80" width="920" height="1080" rx="15" fill="none" stroke="#81c784" strokeWidth="3" opacity="0.6" />
+        {/* Building outline with halo */}
+        <rect x="190" y="80" width="920" height="1080" rx="15" fill="none" stroke="#3a9f6d" strokeWidth="3" opacity="0.7" />
+        
+        {/* Building halo effect with gradient */}
+        <rect x="155" y="55" width="990" height="1140" rx="22" fill="none" stroke="#5ab897" strokeWidth="2" opacity="0.3" />
 
         {/* Floors with offices and routers */}
         {floors.map((floorData, idx) => (
@@ -165,17 +178,17 @@ function BuildingVisualization({ graph, result, start, goal }) {
                   y1={floorData.yStart + 220}
                   x2="1090"
                   y2={floorData.yStart + 220}
-                  stroke="#a5d6a7"
+                  stroke="#7fc9a8"
                   strokeWidth="3"
-                  opacity="0.4"
+                  opacity="0.5"
                 />
                 <rect
                   x="175"
                   y={floorData.yStart + 220}
                   width="930"
                   height="2"
-                  fill="#81c784"
-                  opacity="0.3"
+                  fill="#2d8659"
+                  opacity="0.4"
                 />
               </>
             )}
@@ -191,9 +204,9 @@ function BuildingVisualization({ graph, result, start, goal }) {
                   height="75"
                   rx="4"
                   fill="url(#windowGrad)"
-                  stroke="#4caf50"
+                  stroke="#2d8659"
                   strokeWidth="2"
-                  opacity="0.6"
+                  opacity="0.7"
                 />
                 {/* Window panes */}
                 <line
@@ -201,16 +214,16 @@ function BuildingVisualization({ graph, result, start, goal }) {
                   y1={floorData.yStart + 15}
                   x2={200 + w * 126 + 50}
                   y2={floorData.yStart + 90}
-                  stroke="#4caf50"
+                  stroke="#2d8659"
                   strokeWidth="1"
-                  opacity="0.4"
+                  opacity="0.5"
                 />
               </g>
             ))}
 
             {/* Floor label */}
-            <rect x="30" y={floorData.yStart + 5} width="120" height="210" rx="10" fill="#c8e6c9" stroke="#4caf50" strokeWidth="3" />
-            <text x="90" y={floorData.yStart + 50} fontSize="22" fontWeight="bold" fill="#2d7a3e" textAnchor="middle">
+            <rect x="30" y={floorData.yStart + 5} width="120" height="210" rx="10" fill="#a8d5ba" stroke="#2d8659" strokeWidth="3" />
+            <text x="90" y={floorData.yStart + 50} fontSize="22" fontWeight="bold" fill="#1a4d32" textAnchor="middle">
               F{floorData.floor}
             </text>
             <text x="90" y={floorData.yStart + 110} fontSize="42" textAnchor="middle">
@@ -232,24 +245,86 @@ function BuildingVisualization({ graph, result, start, goal }) {
                 <g key={router}>
                   {/* Halo effect */}
                   {isHighlighted && (
-                    <circle cx={xPos} cy={floorData.yStart + 130} r="65" fill="none" stroke="#4caf50" strokeWidth="3" opacity="0.2" className="router-halo" />
+                    <circle cx={xPos} cy={floorData.yStart + 130} r="65" fill="none" stroke="#2d8659" strokeWidth="3" opacity="0.25" className="router-halo" />
                   )}
 
-                  {/* Office/desk indicator */}
+                  {/* Office/desk indicator with traffic density background */}
                   <rect
                     x={xPos - 42}
                     y={floorData.yStart + 90}
                     width="84"
                     height="80"
                     rx="5"
-                    fill="#ffffff"
-                    stroke={isInPath ? "#4caf50" : "#c8e6c9"}
-                    strokeWidth="2"
+                    fill={
+                      trafficLevel === "high"
+                        ? "#ffebee"
+                        : trafficLevel === "medium"
+                        ? "#fff3e0"
+                        : "#ffffff"
+                    }
+                    stroke={
+                      trafficLevel === "high"
+                        ? "#f44336"
+                        : trafficLevel === "medium"
+                        ? "#ffc107"
+                        : "#a8d5ba"
+                    }
+                    strokeWidth={isInPath ? 3 : 2}
                     opacity="0.95"
+                  />
+                  
+                  {/* Traffic density bar - visual indicator */}
+                  <rect
+                    x={xPos - 39}
+                    y={floorData.yStart + 158}
+                    width={
+                      trafficLevel === "high"
+                        ? 78
+                        : trafficLevel === "medium"
+                        ? 52
+                        : 26
+                    }
+                    height="8"
+                    rx="2"
+                    fill={
+                      trafficLevel === "high"
+                        ? "#f44336"
+                        : trafficLevel === "medium"
+                        ? "#ffc107"
+                        : "#4caf50"
+                    }
+                    opacity="0.8"
                   />
 
                   {/* Router icon */}
                   <RouterIcon cx={xPos} cy={floorData.yStart + 120} isActive={isHighlighted} isInPath={isInPath} trafficLevel={trafficLevel} />
+
+                  {/* Traffic density display - ALWAYS VISIBLE */}
+                  <rect
+                    x={xPos - 30}
+                    y={floorData.yStart + 45}
+                    width="60"
+                    height="28"
+                    rx="4"
+                    fill={
+                      trafficLevel === "high"
+                        ? "#f44336"
+                        : trafficLevel === "medium"
+                        ? "#ffc107"
+                        : "#4caf50"
+                    }
+                    opacity="0.9"
+                  />
+                  <text
+                    x={xPos}
+                    y={floorData.yStart + 65}
+                    fontSize="14"
+                    fontWeight="bold"
+                    fill="white"
+                    textAnchor="middle"
+                  >
+                    {getTrafficPercentage(router)}%
+                  </text>
 
                   {/* Router label */}
                   <text x={xPos} y={floorData.yStart + 190} fontSize="18" fill="#2d3436" textAnchor="middle" fontWeight="700">
@@ -271,14 +346,14 @@ function BuildingVisualization({ graph, result, start, goal }) {
                         height="60"
                         rx="8"
                         fill="#ffffff"
-                        stroke="#4caf50"
+                        stroke="#2d8659"
                         strokeWidth="2"
                         filter="drop-shadow(0 4px 8px rgba(0,0,0,0.2))"
                       />
-                      <text x={xPos} y={floorData.yStart - 45} fontSize="16" fontWeight="bold" fill="#2d7a3e" textAnchor="middle">
+                      <text x={xPos} y={floorData.yStart - 45} fontSize="16" fontWeight="bold" fill="#1a4d32" textAnchor="middle">
                         {router}
                       </text>
-                      <text x={xPos} y={floorData.yStart - 23} fontSize="14" fill="#4caf50" textAnchor="middle">
+                      <text x={xPos} y={floorData.yStart - 23} fontSize="14" fill="#2d8659" textAnchor="middle">
                         {trafficLevel === "high" ? "🔴 High" : trafficLevel === "medium" ? "🟠 Med" : "🟢 Low"}
                       </text>
                     </g>
@@ -293,11 +368,11 @@ function BuildingVisualization({ graph, result, start, goal }) {
         ))}
 
         {/* Building entrance */}
-        <rect x="540" y="1050" width="220" height="90" rx="10" fill="#a5d6a7" stroke="#4caf50" strokeWidth="3" />
+        <rect x="540" y="1050" width="220" height="90" rx="10" fill="#a8d5ba" stroke="#2d8659" strokeWidth="3" />
         <text x="650" y="1080" fontSize="36" textAnchor="middle" dominantBaseline="middle">
           🚪
         </text>
-        <text x="650" y="1125" fontSize="16" textAnchor="middle" fill="#2d7a3e" fontWeight="600">
+        <text x="650" y="1125" fontSize="16" textAnchor="middle" fill="#1a4d32" fontWeight="600">
           Entrance
         </text>
       </svg>

@@ -18,7 +18,7 @@
     {
       "from": "A",
       "to": "B",
-      "weight": 9.600000000000001
+      "weight": 9.8
     },
     {
       "from": "A",
@@ -28,67 +28,67 @@
     {
       "from": "B",
       "to": "C",
-      "weight": 8.40000000000005
+      "weight": 7.8000000000001055
     },
     {
       "from": "B",
       "to": "E",
-      "weight": 9.400000000000002
+      "weight": 9.200000000000003
     },
     {
       "from": "C",
       "to": "F",
-      "weight": 8.900000000000054
+      "weight": 8.300000000000109
     },
     {
       "from": "D",
       "to": "E",
-      "weight": 9.800000000000004
+      "weight": 9.200000000000006
     },
     {
       "from": "D",
       "to": "G",
-      "weight": 9.8
+      "weight": 10.0
     },
     {
       "from": "E",
       "to": "H",
-      "weight": 10.0
+      "weight": 9.600000000000001
     },
     {
       "from": "F",
       "to": "I",
-      "weight": 8.100000000000048
+      "weight": 7.500000000000103
     },
     {
       "from": "G",
       "to": "J",
-      "weight": 9.8
+      "weight": 10.0
     },
     {
       "from": "H",
       "to": "K",
-      "weight": 10.0
+      "weight": 9.600000000000001
     },
     {
       "from": "I",
       "to": "L",
-      "weight": 8.30000000000005
+      "weight": 7.700000000000106
     },
     {
       "from": "J",
       "to": "L",
-      "weight": 9.8
+      "weight": 10.0
     },
     {
       "from": "K",
       "to": "Goal",
-      "weight": 10.0
+      "weight": 9.600000000000001
     },
     {
       "from": "L",
       "to": "Goal",
-      "weight": 9.8
+      "weight": 10.0
     }
   ]
 }

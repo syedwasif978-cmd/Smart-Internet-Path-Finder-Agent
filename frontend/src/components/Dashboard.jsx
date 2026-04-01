@@ -19,6 +19,7 @@ function Dashboard() {
 
   // Load initial node data
   useEffect(() => {
+    console.log("Dashboard mounted, loading data...");
     loadNodeData();
     
     // Set up real-time polling every 2 seconds
@@ -26,22 +27,29 @@ function Dashboard() {
       loadNodeData();
     }, 2000);
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log("Dashboard unmounting");
+      clearInterval(interval);
+    };
   }, []);
 
   // Refresh graph data when result changes
   useEffect(() => {
     if (result) {
+      console.log("Result updated, reloading nodes");
       loadNodeData();
     }
   }, [graphUpdated]);
 
   async function loadNodeData() {
     try {
+      console.log("Fetching nodes and graph from", API_BASE);
       const [nodeResp, graphResp] = await Promise.all([
         axios.get(`${API_BASE}/nodes`),
         axios.get(`${API_BASE}/graph`),
       ]);
+      console.log("Nodes received:", nodeResp.data);
+      console.log("Graph received:", graphResp.data);
       setNodes(nodeResp.data);
       setGraph(graphResp.data);
       if (!start && nodeResp.data.length > 0) {
@@ -49,6 +57,7 @@ function Dashboard() {
         setGoal(nodeResp.data[nodeResp.data.length - 1]);
       }
     } catch (err) {
+      console.error("Error loading data:", err);
       setError("Failed to load network data: " + (err.message || err));
     }
   }
@@ -79,6 +88,8 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
+  console.log("Dashboard rendering with nodes:", nodes, "error:", error);
 
   return (
     <div className="app-content">

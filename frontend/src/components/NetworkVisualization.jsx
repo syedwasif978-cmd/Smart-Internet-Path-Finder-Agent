@@ -3,26 +3,80 @@ import React, { useEffect, useRef, useState } from "react";
 function NetworkVisualization({ nodes, graph, result, start, goal }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const positionsRef = useRef({}); // Store positions persistently
+  const positionsRef = useRef({}); 
   const prevGraphRef = useRef(null);
+  const animationRef = useRef(0); // for pulsing animation
   const [positions, setPositions] = useState({});
   const [hoveredNode, setHoveredNode] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 400 });
-  const [trafficLevels, setTrafficLevels] = useState({});
-  const [layout, setLayout] = useState('circle'); // circle or tree
+  const [trafficDensity, setTrafficDensity] = useState({}); // Real traffic percentages
+  const [layout, setLayout] = useState('tree');
 
-  // Get only path nodes if result exists, otherwise empty
   const pathNodes = result?.path || [];
 
-  // Initialize positions for all nodes when graph or nodes change
+  // Fetch real-time traffic density from backend
+  useEffect(() => {
+    const fetchTraffic = async () => {
+      try {
+        const nodeList = nodes && nodes.length ? nodes : Object.keys(graph || {});
+        const traffic = {};
+
+        let minWeight = Number.POSITIVE_INFINITY;
+        let maxWeight = Number.NEGATIVE_INFINITY;
+        if (graph) {
+          Object.values(graph).forEach((neighbors) => {
+            Object.values(neighbors).forEach((weight) => {
+              if (typeof weight === 'number') {
+                minWeight = Math.min(minWeight, weight);
+                maxWeight = Math.max(maxWeight, weight);
+              }
+            });
+          });
+        }
+
+        if (!Number.isFinite(minWeight) || !Number.isFinite(maxWeight)) {
+          minWeight = 0;
+          maxWeight = 10;
+        }
+
+        nodeList.forEach(node => {
+          let totalWeight = 0;
+          let edgeCount = 0;
+
+          if (graph && graph[node]) {
+            Object.values(graph[node]).forEach(weight => {
+              totalWeight += weight || 0;
+              edgeCount++;
+            });
+          }
+
+          const avgWeight = edgeCount > 0 ? totalWeight / edgeCount : 0;
+          let normalized = maxWeight > minWeight ? (avgWeight - minWeight) / (maxWeight - minWeight) : avgWeight / 10;
+          normalized = Math.min(1, Math.max(0, normalized));
+          // Use gamma curve to compress mid/high values so most nodes appear lower (more green)
+          const gamma = 2.0;
+          traffic[node] = Math.round(Math.pow(normalized, gamma) * 100);
+        });
+
+        setTrafficDensity(traffic);
+      } catch (err) {
+        console.error("Error calculating traffic:", err);
+      }
+    };
+
+    fetchTraffic();
+    const interval = setInterval(fetchTraffic, 1000); // Update every second
+    return () => clearInterval(interval);
+  }, [nodes, graph]);
+
+  // Initialize positions for all nodes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Force a consistent canvas height to avoid it shifting down
     const container = containerRef.current;
-    const targetHeight = 520; // match building visualization height so panels align
+    const targetHeight = 520;
     const targetWidth = container ? Math.max(500, container.getBoundingClientRect().width - 20) : 800;
     setCanvasSize({ width: targetWidth, height: targetHeight });
     canvas.width = targetWidth;
@@ -31,32 +85,56 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     const width = canvas.width;
     const height = canvas.height;
 
-    // Circle layout for all nodes
+    // TREE LAYOUT: Goal at root, hierarchical structure
     const newPositions = {};
     const nodeList = nodes && nodes.length ? nodes : Object.keys(graph || {});
-    const n = nodeList.length || 1;
-    const cx = width / 2;
-    const cy = height / 2;
-    const radius = Math.min(width, height) / 2 - 80;
-
-    nodeList.forEach((node, i) => {
-      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-      const x = cx + Math.cos(angle) * radius;
-      const y = cy + Math.sin(angle) * radius;
+    
+    const visited = new Set();
+    const levels = {};
+    const queue = [{ node: 'Goal', level: 0 }];
+    
+    while (queue.length > 0) {
+      const { node, level } = queue.shift();
+      if (visited.has(node)) continue;
+      visited.add(node);
+      levels[node] = level;
+      
+      if (graph && graph[node]) {
+        Object.keys(graph[node]).forEach(neighbor => {
+          if (!visited.has(neighbor)) {
+            queue.push({ node: neighbor, level: level + 1 });
+          }
+        });
+      }
+    }
+    
+    nodeList.forEach(node => {
+      if (!visited.has(node)) {
+        levels[node] = Math.max(...Object.values(levels), 0) + 1;
+      }
+    });
+    
+    const levelCounts = {};
+    Object.values(levels).forEach(level => {
+      levelCounts[level] = (levelCounts[level] || 0) + 1;
+    });
+    
+    const levelIndices = {};
+    nodeList.forEach(node => {
+      const level = levels[node];
+      levelIndices[level] = (levelIndices[level] || 0) + 1;
+      const indexInLevel = levelIndices[level] - 1;
+      const countAtLevel = levelCounts[level];
+      
+      const y = 60 + level * (height / Math.max(3, Object.keys(levelCounts).length));
+      const x = (indexInLevel + 0.5) * (width / Math.max(1, countAtLevel));
+      
       newPositions[node] = { x, y };
     });
 
     positionsRef.current = newPositions;
     setPositions(newPositions);
     prevGraphRef.current = JSON.stringify(graph || {});
-
-    // Generate a simple traffic level per node (for visualization)
-    const t = {};
-    nodeList.forEach((node) => {
-      const r = Math.random();
-      t[node] = r < 0.6 ? 'low' : r < 0.9 ? 'medium' : 'high';
-    });
-    setTrafficLevels(t);
   }, [nodes, JSON.stringify(graph)]);
 
   // Handle window resize
@@ -78,6 +156,18 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Animation loop for pulsing effects
+  useEffect(() => {
+    let animationId;
+    const animate = () => {
+      animationRef.current = (animationRef.current + 0.02) % (Math.PI * 2);
+      animationId = requestAnimationFrame(animate);
+    };
+    animationId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  // Main canvas drawing
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || Object.keys(positions).length === 0) return;
@@ -86,21 +176,42 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     const width = canvas.width;
     const height = canvas.height;
 
-    // Clear canvas
-    ctx.fillStyle = "rgba(232, 245, 242, 0.3)";
+    // Compute categories by quantiles (20% high, 30% medium, 50% low)
+    const categories = {};
+    const catNodes = Object.keys(positions);
+    if (catNodes.length > 0) {
+      const vals = catNodes.map((n) => trafficDensity[n] || 0);
+      const sorted = vals.slice().sort((a, b) => b - a);
+      const nNodes = catNodes.length;
+      let highCount = Math.round(nNodes * 0.2);
+      let medCount = Math.round(nNodes * 0.3);
+      if (highCount + medCount > nNodes) medCount = nNodes - highCount;
+      const highThreshold = highCount > 0 ? sorted[highCount - 1] : Number.POSITIVE_INFINITY;
+      const medThreshold = highCount + medCount > 0 ? sorted[highCount + medCount - 1] : -1;
+      catNodes.forEach((node) => {
+        const v = trafficDensity[node] || 0;
+        if (v >= highThreshold) categories[node] = "high";
+        else if (v >= medThreshold) categories[node] = "medium";
+        else categories[node] = "low";
+      });
+    }
+
+    // Beautiful gradient background
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "rgba(240, 250, 250, 0.5)");
+    gradient.addColorStop(1, "rgba(224, 242, 240, 0.5)");
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 
-    // Track drawn edges to prevent duplicates
     const drawnEdges = new Set();
 
-    // Draw ALL edges first (low-opacity) so the full topology is visible
+    // Draw all edges first with gradient effect
     if (Object.keys(graph).length > 0) {
       Object.keys(graph).forEach((u) => {
         const nbrs = graph[u] || {};
         Object.keys(nbrs).forEach((v) => {
-          // draw each undirected edge only once
           if (!positions[u] || !positions[v]) return;
-          if (u > v) return; // simple dedupe
+          if (u > v) return;
 
           const fromPos = positions[u];
           const toPos = positions[v];
@@ -110,16 +221,22 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
           const dy = toPos.y - fromPos.y;
           const angle = Math.atan2(dy, dx);
 
-          const nodeRadius = 30;
+          const nodeRadius = 40;
           const startX = fromPos.x + Math.cos(angle) * nodeRadius;
           const startY = fromPos.y + Math.sin(angle) * nodeRadius;
           const endX = toPos.x - Math.cos(angle) * nodeRadius;
           const endY = toPos.y - Math.sin(angle) * nodeRadius;
 
-          // color by weight
+          // Edge gradient
+          const edgeGradient = ctx.createLinearGradient(startX, startY, endX, endY);
+          const edgeColor = weight < 3 ? ['#4caf50', '#81c784'] : weight < 6 ? ['#ffc107', '#ffb300'] : ['#ff6f00', '#ff5722'];
+          edgeGradient.addColorStop(0, edgeColor[0]);
+          edgeGradient.addColorStop(1, edgeColor[1]);
+
           ctx.beginPath();
-          ctx.strokeStyle = getEdgeColor(weight, false);
-          ctx.lineWidth = 2;
+          ctx.strokeStyle = edgeGradient;
+          ctx.lineWidth = 2.5;
+          ctx.lineCap = 'round';
           ctx.moveTo(startX, startY);
           ctx.lineTo(endX, endY);
           ctx.stroke();
@@ -127,7 +244,7 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
       });
     }
 
-    // Highlight the chosen path with thicker colored edges
+    // Draw path with animation
     if (pathNodes && pathNodes.length > 0) {
       for (let i = 0; i < pathNodes.length - 1; i++) {
         const from = pathNodes[i];
@@ -135,40 +252,49 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
         if (!positions[from] || !positions[to]) continue;
         if (!graph[from] || !graph[from][to]) continue;
 
-        const weight = graph[from][to];
         const fromPos = positions[from];
         const toPos = positions[to];
         const dx = toPos.x - fromPos.x;
         const dy = toPos.y - fromPos.y;
         const angle = Math.atan2(dy, dx);
 
-        const nodeRadius = 30;
+        const nodeRadius = 40;
         const startX = fromPos.x + Math.cos(angle) * nodeRadius;
         const startY = fromPos.y + Math.sin(angle) * nodeRadius;
         const endX = toPos.x - Math.cos(angle) * nodeRadius;
         const endY = toPos.y - Math.sin(angle) * nodeRadius;
 
-        // Draw highlighted edge
+        // Glowing path animation
+        const glowAlpha = 0.7 + 0.3 * Math.sin(animationRef.current);
         ctx.beginPath();
-        ctx.strokeStyle = "#ff6f00"; // highlight color (orange)
-        ctx.lineWidth = 6;
+        ctx.strokeStyle = `rgba(255, 111, 0, ${glowAlpha})`;
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Solid path on top
+        ctx.beginPath();
+        ctx.strokeStyle = '#ff6f00';
+        ctx.lineWidth = 5;
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
         // Arrow head
-        const arrowSize = 12;
+        const arrowSize = 15;
         ctx.beginPath();
-        ctx.fillStyle = "#ff6f00";
+        ctx.fillStyle = '#ff6f00';
         ctx.moveTo(endX, endY);
-        ctx.lineTo(endX - arrowSize * Math.cos(angle - Math.PI / 7), endY - arrowSize * Math.sin(angle - Math.PI / 7));
-        ctx.lineTo(endX - arrowSize * Math.cos(angle + Math.PI / 7), endY - arrowSize * Math.sin(angle + Math.PI / 7));
+        ctx.lineTo(endX - arrowSize * Math.cos(angle - Math.PI / 6), endY - arrowSize * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(endX - arrowSize * Math.cos(angle + Math.PI / 6), endY - arrowSize * Math.sin(angle + Math.PI / 6));
         ctx.closePath();
         ctx.fill();
       }
     }
 
-    // Draw all nodes (visible before search). Color by traffic and highlight path nodes.
+    // Draw all nodes as stylized routers with antenna
     Object.keys(positions).forEach((node) => {
       const pos = positions[node];
       if (!pos) return;
@@ -176,83 +302,115 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
       const isStart = node === start;
       const isGoal = node === goal;
       const isInPath = pathNodes.includes(node);
+      const isHovered = hoveredNode === node;
 
-      // determine node color (traffic influences fill)
-      let fillColor = getNodeColor(node, isInPath, isStart, isGoal, hoveredNode);
+      const traffic = trafficDensity[node] || 0;
+      const pulseEffectSize = isHovered ? 8 : 4;
+      const pulseOpacity = 0.5 + 0.5 * Math.sin(animationRef.current);
 
-      // Draw circle
+      // Pulsing aura
+      if (isInPath || isHovered) {
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 40 + pulseEffectSize, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 111, 0, ${pulseOpacity * 0.4})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      // Node body (rectangle like a router)
+      const routerWidth = 36;
+      const routerHeight = 28;
+      const cornerRadius = 6;
+
+      // Background gradient
+      let bgGradient = ctx.createLinearGradient(pos.x - routerWidth / 2, pos.y - routerHeight / 2, pos.x + routerWidth / 2, pos.y + routerHeight / 2);
+      if (isGoal) {
+        bgGradient.addColorStop(0, '#ff9800');
+        bgGradient.addColorStop(1, '#ff6f00');
+      } else if (isStart) {
+        bgGradient.addColorStop(0, '#4caf50');
+        bgGradient.addColorStop(1, '#388e3c');
+      } else if (isInPath) {
+        bgGradient.addColorStop(0, '#66bb6a');
+        bgGradient.addColorStop(1, '#4caf50');
+      } else {
+        bgGradient.addColorStop(0, '#64b5f6');
+        bgGradient.addColorStop(1, '#42a5f5');
+      }
+
+      // Draw rounded rectangle
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2);
-      ctx.fillStyle = fillColor;
+      ctx.moveTo(pos.x - routerWidth / 2 + cornerRadius, pos.y - routerHeight / 2);
+      ctx.lineTo(pos.x + routerWidth / 2 - cornerRadius, pos.y - routerHeight / 2);
+      ctx.quadraticCurveTo(pos.x + routerWidth / 2, pos.y - routerHeight / 2, pos.x + routerWidth / 2, pos.y - routerHeight / 2 + cornerRadius);
+      ctx.lineTo(pos.x + routerWidth / 2, pos.y + routerHeight / 2 - cornerRadius);
+      ctx.quadraticCurveTo(pos.x + routerWidth / 2, pos.y + routerHeight / 2, pos.x + routerWidth / 2 - cornerRadius, pos.y + routerHeight / 2);
+      ctx.lineTo(pos.x - routerWidth / 2 + cornerRadius, pos.y + routerHeight / 2);
+      ctx.quadraticCurveTo(pos.x - routerWidth / 2, pos.y + routerHeight / 2, pos.x - routerWidth / 2, pos.y + routerHeight / 2 - cornerRadius);
+      ctx.lineTo(pos.x - routerWidth / 2, pos.y - routerHeight / 2 + cornerRadius);
+      ctx.quadraticCurveTo(pos.x - routerWidth / 2, pos.y - routerHeight / 2, pos.x - routerWidth / 2 + cornerRadius, pos.y - routerHeight / 2);
+      ctx.closePath();
+      ctx.fillStyle = bgGradient;
       ctx.fill();
-
-      // Draw border
-      ctx.strokeStyle = getBorderColor(node, isInPath, isStart, isGoal);
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = isHovered ? '#fff' : 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Draw label
-      ctx.font = "bold 14px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "white";
-      ctx.fillText(node, pos.x, pos.y);
+      // Router antenna (ports)
+      const antennLen = 12;
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      
+      // Left antenna
+      ctx.beginPath();
+      ctx.moveTo(pos.x - routerWidth / 2 - 2, pos.y - routerHeight / 2 + 4);
+      ctx.lineTo(pos.x - routerWidth / 2 - antennLen, pos.y - routerHeight / 2 - 4);
+      ctx.stroke();
+      
+      // Right antenna
+      ctx.beginPath();
+      ctx.moveTo(pos.x + routerWidth / 2 + 2, pos.y - routerHeight / 2 + 4);
+      ctx.lineTo(pos.x + routerWidth / 2 + antennLen, pos.y - routerHeight / 2 - 4);
+      ctx.stroke();
 
-      // Draw traffic density bar beneath the node
-      const traffic = trafficLevels[node] || 'low';
-      const barWidth = 48;
-      const barHeight = 8;
+      // Router label
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(node, pos.x, pos.y - 2);
+
+      // Traffic density bar and value beneath
+      const barWidth = 50;
+      const barHeight = 6;
       const barX = pos.x - barWidth / 2;
-      const barY = pos.y + 36; // below circle
+      const barY = pos.y + 20;
 
-      // background
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      // Bar background
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
       ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
-      // filled portion
-      let pct = 0.33;
-      if (traffic === 'low') pct = 0.33;
-      if (traffic === 'medium') pct = 0.66;
-      if (traffic === 'high') pct = 1.0;
-      ctx.fillStyle = traffic === 'low' ? '#4caf50' : traffic === 'medium' ? '#ffc107' : '#f44336';
-      ctx.fillRect(barX, barY, barWidth * pct, barHeight);
-      // border
-      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+
+      // Traffic indicator color based on quantiles
+      const cat = categories[node] || 'low';
+      let trafficColor = cat === 'high' ? '#f44336' : cat === 'medium' ? '#ffc107' : '#4caf50';
+
+      // Filled bar
+      ctx.fillStyle = trafficColor;
+      ctx.fillRect(barX, barY, (barWidth * traffic) / 100, barHeight);
+
+      // Bar border
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
       ctx.lineWidth = 1;
       ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+
+      // Traffic percentage value
+      ctx.font = '11px Arial';
+      ctx.fillStyle = '#333';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${traffic}%`, pos.x, barY + 12);
     });
-
-    function getEdgeColor(weight, isInPath) {
-      if (isInPath) return "#4caf50";
-      if (weight < 2) return "rgba(76, 175, 80, 0.6)";
-      if (weight < 4) return "rgba(255, 193, 7, 0.6)";
-      return "rgba(244, 67, 54, 0.6)";
-    }
-
-    function getWeightColor(weight) {
-      if (weight < 2) return "#4caf50";
-      if (weight < 4) return "#ffc107";
-      return "#f44336";
-    }
-
-    function getNodeColor(node, isInPath, isStart, isGoal, hovered) {
-      if (isStart) return "rgba(76, 175, 80, 0.9)";
-      if (isGoal) return "rgba(255, 152, 0, 0.9)";
-      if (isInPath) return "rgba(129, 199, 132, 0.8)";
-      if (hovered === node) return "rgba(255, 193, 7, 0.8)";
-      return "rgba(76, 175, 80, 0.7)";
-    }
-
-    function getBorderColor(node, isInPath, isStart, isGoal) {
-      if (isStart) return "#4caf50";
-      if (isGoal) return "#ffa726";
-      if (isInPath) return "#81c784";
-      return "#fff";
-    }
-
-    function isHighlightNode(node) {
-      return node === start || node === goal || node === hoveredNode;
-    }
-  }, [pathNodes, graph, result, positions, start, goal]);
+  }, [pathNodes, graph, positions, start, goal, trafficDensity, hoveredNode]);
 
   const handleCanvasHover = (e) => {
     const canvas = canvasRef.current;
@@ -264,15 +422,12 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
 
     setMousePos({ x, y });
 
-    // Check if hovering over a path node
     let hovered = null;
-    pathNodes.forEach((node) => {
+    Object.keys(positions).forEach((node) => {
       const pos = positions[node];
       if (!pos) return;
-      const distance = Math.sqrt(
-        Math.pow(pos.x - x, 2) + Math.pow(pos.y - y, 2)
-      );
-      if (distance < 35) {
+      const distance = Math.sqrt(Math.pow(pos.x - x, 2) + Math.pow(pos.y - y, 2));
+      if (distance < 45) {
         hovered = node;
       }
     });
@@ -284,7 +439,11 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
   };
 
   return (
-    <div className="visualization-container" ref={containerRef} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div
+      className="visualization-container"
+      ref={containerRef}
+      style={{ height: "100%", display: "flex", flexDirection: "column" }}
+    >
       <div className="panel-header">🔗 Network Topology</div>
       <canvas
         ref={canvasRef}
@@ -293,23 +452,15 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
         width={canvasSize.width}
         height={canvasSize.height}
         style={{
-          cursor: hoveredNode ? "pointer" : "default",
+          border: "1px solid #e2e8f0",
+          borderRadius: "10px",
           flex: 1,
-          borderRadius: 10,
-          border: "1px solid rgba(76, 175, 80, 0.2)",
-          display: 'block',
-          backgroundColor: 'rgba(232, 245, 242, 0.1)',
+          cursor: hoveredNode ? "pointer" : "default",
+          backgroundColor: "#f5faf9",
         }}
       />
-      <div style={{ marginTop: 15, fontSize: 12, color: "#4caf50" }}>
-        <div style={{ marginBottom: 8 }}>
-          {hoveredNode && (
-            <div style={{ color: "#2d7a3e" }}>
-              📌 Hovering: <strong>{hoveredNode}</strong>
-            </div>
-          )}
-        </div>
-        <div>🟢 Green = optimal path | 🟩 Start | 🟧 destination</div>
+      <div style={{ fontSize: "12px", color: "#888", marginTop: "8px", textAlign: "center" }}>
+        Hover over routers to see details | Orange path shows optimal route
       </div>
     </div>
   );

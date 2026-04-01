@@ -189,14 +189,21 @@
 }
 
 .author-avatar {
-  font-size: 48px;
-  margin-bottom: 12px;
-  display: inline-block;
-  transition: all 0.3s ease;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 12px;
+  background: linear-gradient(135deg, #ffffff, #f1fbfa);
+  box-shadow: 0 10px 26px rgba(12, 40, 56, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .author-card:hover .author-avatar {
-  transform: scale(1.15);
+  transform: scale(1.08);
 }
 
 .author-name {
@@ -207,13 +214,7 @@
   font-family: 'Poppins', sans-serif;
 }
 
-.author-nickname {
-  font-size: 0.85rem;
-  color: #12b0a1;
-  font-style: italic;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
+.author-nickname { display:none; }
 
 .author-role {
   font-size: 0.8rem;

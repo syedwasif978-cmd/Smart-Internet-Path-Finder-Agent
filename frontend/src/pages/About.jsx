@@ -2,6 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./About.css";
 
+const roleEmojiMap = {
+  "Lead Developer": "🧑‍💻",
+  "Algorithm Specialist": "🧠",
+  "UI/UX Designer": "🎨",
+  "Backend Engineer": "🛠️",
+};
+
 function About() {
   const authors = [
     {
@@ -85,8 +92,10 @@ function About() {
             <div className="authors-grid">
               {authors.map((author, idx) => (
                 <div key={idx} className="author-card">
+                  <div className="author-avatar" aria-hidden>
+                    {roleEmojiMap[author.role] || "👤"}
+                  </div>
                   <h3 className="author-name">{author.name}</h3>
-                  <p className="author-nickname">"{author.nickname}"</p>
                   <p className="author-role">{author.role}</p>
                 </div>
               ))}

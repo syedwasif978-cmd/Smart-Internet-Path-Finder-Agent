@@ -1,0 +1,151 @@
+/* Styles for the search result tree in NetworkVisualization */
+.nv-empty {
+  padding: 18px;
+  color: #445;
+  font-size: 18px;
+  font-weight: 600;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  border: 1px solid #e3f0fb;
+  border-radius: 10px;
+  text-align: center;
+}
+.nv-empty-sub {
+  font-size: 13px;
+  color: #6b7b86;
+  margin-top: 6px;
+}
+
+.nv-tree-container {
+  margin-top: 8px;
+  background: linear-gradient(170deg, #fcfeff 0%, #f3fbff 100%);
+  border: 1px solid #d7eaf6;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 18px rgba(10, 40, 60, 0.06);
+  max-height: calc(100vh - 320px);
+  overflow: auto;
+}
+
+.nv-tree {
+  list-style: none;
+  margin: 0;
+  padding-left: 28px;
+  position: relative;
+}
+
+/* vertical connector */
+.nv-tree::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: linear-gradient(#cbe8ff, #9ecff5);
+  border-radius: 2px;
+  opacity: 0.95;
+}
+
+.nv-tree-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #ffffff, #f9fdff);
+  border-radius: 10px;
+  border: 1px solid rgba(14, 45, 83, 0.04);
+  position: relative;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.nv-tree-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(11, 38, 56, 0.08);
+}
+
+.nv-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00b6ff, #0056d6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(4, 45, 88, 0.14);
+  position: relative;
+  margin-left: -8px;
+  z-index: 2;
+}
+.nv-badge-num {
+  font-size: 18px;
+}
+
+.nv-node {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nv-node-name {
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #073b4c;
+  letter-spacing: 0.2px;
+}
+.nv-node-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #3b5360;
+  font-size: 13px;
+}
+
+.nv-cost { color: #52707d; font-weight: 600; }
+.nv-cost-val { color: #ff6f00; font-weight: 800; margin-left: 6px; }
+
+.nv-traffic-pill { padding: 6px 8px; border-radius: 999px; font-weight: 700; font-size: 12px; color: #fff; box-shadow: 0 6px 10px rgba(10,40,60,0.06); }
+.nv-traffic-pill.low { background: linear-gradient(90deg,#6ed37a,#2fb14d); }
+.nv-traffic-pill.medium { background: linear-gradient(90deg,#ffd166,#ffb020); }
+.nv-traffic-pill.high { background: linear-gradient(90deg,#ff7a7a,#ff3b3b); }
+
+.nv-start .nv-badge { background: linear-gradient(135deg,#6ddf8a,#1e8f3a); }
+.nv-goal .nv-badge { background: linear-gradient(135deg,#ffb366,#ff6f00); }
+.nv-inpath { border-left: 4px solid rgba(255,111,0,0.12); }
+
+/* badge pop animation */
+.nv-tree-item:hover .nv-badge { animation: nv-badge-pop 420ms cubic-bezier(.2,.9,.3,1); }
+@keyframes nv-badge-pop { 0% { transform: scale(0.94); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+@media (max-width: 900px) {
+  .nv-badge { width: 38px; height: 38px; }
+  .nv-badge-num { font-size: 16px; }
+  .nv-node-name { font-size: 16px; }
+}
+
+/* Downward arrow indicators between tree items to show path direction */
+.nv-tree-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 18px; /* align with vertical connector */
+  top: calc(100% - 2px);
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 12px solid rgba(255,111,0,0.95);
+  z-index: 1;
+  opacity: 0.95;
+  filter: drop-shadow(0 6px 8px rgba(255,111,0,0.08));
+  animation: nv-arrow-flow 1400ms ease-in-out infinite;
+}
+
+@keyframes nv-arrow-flow {
+  0% { transform: translateX(-50%) translateY(-3px); opacity: 0.22; }
+  50% { transform: translateX(-50%) translateY(0px); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(3px); opacity: 0.22; }
+}
+

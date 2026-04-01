@@ -2,29 +2,32 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./About.css";
 
+const roleEmojiMap = {
+  "Lead Developer": "🧑‍💻",
+  "Algorithm Specialist": "🧠",
+  "UI/UX Designer": "🎨",
+  "Backend Engineer": "🛠️",
+};
+
 function About() {
   const authors = [
     {
       name: "Shazil Zaib",
-      nickname: "Safaid Bhund Wala",
       role: "Lead Developer",
       description: "Full-stack architect and project lead",
     },
     {
       name: "Haseeb Asghar",
-      nickname: "Anti Army",
       role: "Algorithm Specialist",
       description: "Graph algorithms & pathfinding expert",
     },
     {
       name: "Ahmed Khan",
-      nickname: "King & Takluman",
       role: "UI/UX Designer",
       description: "Frontend design & user experience",
     },
     {
       name: "Syed Wasif",
-      nickname: "Ghareeb Banda",
       role: "Backend Engineer",
       description: "API development & database design",
     },
@@ -108,9 +111,10 @@ function About() {
           <div className="authors-grid">
             {authors.map((author, idx) => (
               <div key={idx} className="author-card">
-                <div className="author-avatar">{author.role.charAt(0)}</div>
+                <div className="author-avatar" aria-hidden>
+                  {roleEmojiMap[author.role] || "👤"}
+                </div>
                 <h3 className="author-name">{author.name}</h3>
-                <p className="author-nickname">"{author.nickname}"</p>
                 <p className="author-role">{author.role}</p>
                 <p className="author-desc">{author.description}</p>
               </div>

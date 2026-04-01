@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import "./NetworkVisualization.css";
 
 function NetworkVisualization({ nodes, graph, result, start, goal }) {
   const canvasRef = useRef(null);
@@ -70,7 +71,8 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     return () => clearInterval(interval);
   }, [nodes, graph]);
 
-  // Initialize positions for all nodes
+  // Initialize positions for all nodes. Prefer saved fixed positions (from backend)
+  // and fall back to the tree layout if none are found.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -85,56 +87,99 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     const width = canvas.width;
     const height = canvas.height;
 
-    // TREE LAYOUT: Goal at root, hierarchical structure
-    const newPositions = {};
     const nodeList = nodes && nodes.length ? nodes : Object.keys(graph || {});
-    
-    const visited = new Set();
-    const levels = {};
-    const queue = [{ node: 'Goal', level: 0 }];
-    
-    while (queue.length > 0) {
-      const { node, level } = queue.shift();
-      if (visited.has(node)) continue;
-      visited.add(node);
-      levels[node] = level;
-      
-      if (graph && graph[node]) {
-        Object.keys(graph[node]).forEach(neighbor => {
-          if (!visited.has(neighbor)) {
-            queue.push({ node: neighbor, level: level + 1 });
-          }
-        });
-      }
-    }
-    
-    nodeList.forEach(node => {
-      if (!visited.has(node)) {
-        levels[node] = Math.max(...Object.values(levels), 0) + 1;
-      }
-    });
-    
-    const levelCounts = {};
-    Object.values(levels).forEach(level => {
-      levelCounts[level] = (levelCounts[level] || 0) + 1;
-    });
-    
-    const levelIndices = {};
-    nodeList.forEach(node => {
-      const level = levels[node];
-      levelIndices[level] = (levelIndices[level] || 0) + 1;
-      const indexInLevel = levelIndices[level] - 1;
-      const countAtLevel = levelCounts[level];
-      
-      const y = 60 + level * (height / Math.max(3, Object.keys(levelCounts).length));
-      const x = (indexInLevel + 0.5) * (width / Math.max(1, countAtLevel));
-      
-      newPositions[node] = { x, y };
-    });
 
-    positionsRef.current = newPositions;
-    setPositions(newPositions);
-    prevGraphRef.current = JSON.stringify(graph || {});
+    const applyTreeLayout = () => {
+      const newPositions = {};
+      const visited = new Set();
+      const levels = {};
+      const queue = [{ node: 'Goal', level: 0 }];
+
+      while (queue.length > 0) {
+        const { node, level } = queue.shift();
+        if (visited.has(node)) continue;
+        visited.add(node);
+        levels[node] = level;
+
+        if (graph && graph[node]) {
+          Object.keys(graph[node]).forEach((neighbor) => {
+            if (!visited.has(neighbor)) {
+              queue.push({ node: neighbor, level: level + 1 });
+            }
+          });
+        }
+      }
+
+      nodeList.forEach((node) => {
+        if (!visited.has(node)) {
+          levels[node] = Math.max(...Object.values(levels), 0) + 1;
+        }
+      });
+
+      const levelCounts = {};
+      Object.values(levels).forEach((level) => {
+        levelCounts[level] = (levelCounts[level] || 0) + 1;
+      });
+
+      const levelIndices = {};
+      nodeList.forEach((node) => {
+        const level = levels[node];
+        levelIndices[level] = (levelIndices[level] || 0) + 1;
+        const indexInLevel = levelIndices[level] - 1;
+        const countAtLevel = levelCounts[level];
+
+        const y = 60 + level * (height / Math.max(3, Object.keys(levelCounts).length));
+        const x = (indexInLevel + 0.5) * (width / Math.max(1, countAtLevel));
+
+        newPositions[node] = { x, y };
+      });
+
+      positionsRef.current = newPositions;
+      setPositions(newPositions);
+      prevGraphRef.current = JSON.stringify(graph || {});
+    };
+
+    // Try to load saved positions from the backend; saved positions use percentage
+    // coordinates (0-100). Map them to canvas pixels. If none exist, use tree layout.
+    fetch('/load-router-positions')
+      .then((r) => r.json())
+      .then((data) => {
+        const saved = data && data.positions ? data.positions : {};
+        if (saved && Object.keys(saved).length > 0) {
+          const newPositions = {};
+          const routerSeen = {};
+
+          // saved is a dict like { "C_F4": { x: 70.29, y: 28.14, router: "C", floor: 4 }, ... }
+          Object.values(saved).forEach((entry) => {
+            const router = entry.router || entry.name;
+            if (!router) return;
+            if (routerSeen[router]) return; // keep first occurrence
+            routerSeen[router] = true;
+            const px = Math.round((entry.x / 100) * width);
+            const py = Math.round((entry.y / 100) * height);
+            newPositions[router] = { x: px, y: py };
+          });
+
+          // Fill missing nodes with fallback positions
+          nodeList.forEach((n, idx) => {
+            if (!newPositions[n]) {
+              const x = ((idx + 0.5) / Math.max(1, nodeList.length)) * width;
+              const y = height - 80;
+              newPositions[n] = { x, y };
+            }
+          });
+
+          positionsRef.current = newPositions;
+          setPositions(newPositions);
+          prevGraphRef.current = JSON.stringify(graph || {});
+        } else {
+          applyTreeLayout();
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load saved router positions; using tree layout", err);
+        applyTreeLayout();
+      });
   }, [nodes, JSON.stringify(graph)]);
 
   // Handle window resize
@@ -438,29 +483,119 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     setHoveredNode(null);
   };
 
+  const renderPathTree = () => {
+    if (!pathNodes || pathNodes.length === 0) {
+      return (
+        <div className="nv-empty">
+          <strong>No path computed yet.</strong>
+          <div className="nv-empty-sub">Press "Find Optimal Path" to visualize a route.</div>
+        </div>
+      );
+    }
+
+    // compute cumulative costs along the path (fallback if graph direction is reversed)
+    const cumulative = [];
+    let cum = 0;
+    for (let i = 0; i < pathNodes.length; i++) {
+      if (i === 0) {
+        cumulative.push(0);
+        continue;
+      }
+      const u = pathNodes[i - 1];
+      const v = pathNodes[i];
+      const w = (graph && graph[u] && graph[u][v]) || (graph && graph[v] && graph[v][u]) || 0;
+      cum += Number.isFinite(w) ? w : 0;
+      cumulative.push(cum);
+    }
+
+    const nodeItems = pathNodes.map((node, idx) => ({
+      id: node,
+      index: idx + 1,
+      cost: cumulative[idx],
+      traffic: trafficDensity[node] || 0,
+    }));
+
+    const getTrafficClass = (n) => {
+      const t = n.traffic;
+      if (t >= 70) return 'high';
+      if (t >= 35) return 'medium';
+      return 'low';
+    };
+
+    return (
+      <div className="nv-tree-container">
+        <ul className="nv-tree" aria-label="Search result tree">
+          {nodeItems.map((n, i) => {
+            const isStart = i === 0;
+            const isGoal = i === nodeItems.length - 1;
+            const inPath = true;
+            const trafficClass = getTrafficClass(n);
+            return (
+              <li
+                key={n.id + '-' + i}
+                className={`nv-tree-item ${isStart ? 'nv-start' : ''} ${isGoal ? 'nv-goal' : ''} ${inPath ? 'nv-inpath' : ''}`}
+                onMouseEnter={() => setHoveredNode(n.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+                onClick={() => setHoveredNode(n.id)}
+              >
+                <div className="nv-badge" aria-hidden>
+                  <span className="nv-badge-num">{n.index}</span>
+                </div>
+                <div className="nv-node">
+                  <div className="nv-node-name">{n.id}</div>
+                  <div className="nv-node-meta">
+                    <div className="nv-cost">Cost: <span className="nv-cost-val">{n.cost}</span></div>
+                    <div className={`nv-traffic-pill ${trafficClass}`}>{n.traffic}%</div>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  };
+
+  const summaryLabel = result ? result.algorithm : "Unknown";
+
   return (
     <div
       className="visualization-container"
       ref={containerRef}
       style={{ height: "100%", display: "flex", flexDirection: "column" }}
     >
-      <div className="panel-header">🔗 Network Topology</div>
-      <canvas
-        ref={canvasRef}
-        onMouseMove={handleCanvasHover}
-        onMouseLeave={handleCanvasLeave}
-        width={canvasSize.width}
-        height={canvasSize.height}
+      <div className="panel-header" style={{ fontSize: "1.07rem", letterSpacing: "0.5px" }}>
+        🌲 Search Result Tree
+      </div>
+      <div
         style={{
-          border: "1px solid #e2e8f0",
+          padding: "13px",
+          display: "grid",
+          gridTemplateColumns: "repeat(5, minmax(120px, 1fr))",
+          gap: "10px",
+          marginBottom: "10px",
           borderRadius: "10px",
-          flex: 1,
-          cursor: hoveredNode ? "pointer" : "default",
-          backgroundColor: "#f5faf9",
+          border: "1px solid #c9dff1",
+          background: "linear-gradient(160deg, rgba(243,248,253,0.95) 0%, rgba(225,241,253,0.95) 100%)",
+          boxShadow: "0 8px 16px rgba(14,45,83,0.08)",
         }}
-      />
-      <div style={{ fontSize: "12px", color: "#888", marginTop: "8px", textAlign: "center" }}>
-        Hover over routers to see details | Orange path shows optimal route
+      >
+        <div style={{ color: "#2073a8", fontWeight: 700 }}>Algorithm</div>
+        <div style={{ color: "#2073a8", fontWeight: 700 }}>Source</div>
+        <div style={{ color: "#2073a8", fontWeight: 700 }}>Destination</div>
+        <div style={{ color: "#2073a8", fontWeight: 700 }}>Cost</div>
+        <div style={{ color: "#2073a8", fontWeight: 700 }}>Explored</div>
+        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{summaryLabel}</div>
+        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{start || "-"}</div>
+        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{goal || "-"}</div>
+        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{result?.cost ?? "-"}</div>
+        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{result?.nodes_explored ?? "-"}</div>
+      </div>
+
+      {renderPathTree()}
+
+      <div style={{ fontSize: "13px", color: "#4f6372", marginTop: "12px", textAlign: "center" }}>
+        This tree shows the chosen route from start to goal in sequential step order.
       </div>
     </div>
   );

@@ -8,39 +8,35 @@ function About() {
       name: "Shazil Zaib",
       nickname: "Safaid Bhund Wala",
       role: "Lead Developer",
-      emoji: "👨‍💻",
       description: "Full-stack architect and project lead",
     },
     {
       name: "Haseeb Asghar",
       nickname: "Anti Army",
       role: "Algorithm Specialist",
-      emoji: "🧠",
       description: "Graph algorithms & pathfinding expert",
     },
     {
       name: "Ahmed Khan",
       nickname: "King & Takluman",
       role: "UI/UX Designer",
-      emoji: "🎨",
       description: "Frontend design & user experience",
     },
     {
       name: "Syed Wasif",
       nickname: "Ghareeb Banda",
       role: "Backend Engineer",
-      emoji: "⚙️",
       description: "API development & database design",
     },
   ];
 
   const features = [
-    { icon: "📊", title: "Network Visualization", desc: "Interactive topology display" },
-    { icon: "🏢", title: "Building Layout", desc: "Office network distribution" },
-    { icon: "🚀", title: "Multiple Algorithms", desc: "A*, BFS, DFS, UCS support" },
-    { icon: "⚡", title: "Real-time Updates", desc: "Live traffic monitoring" },
-    { icon: "🎯", title: "Optimal Routing", desc: "Smart path finding" },
-    { icon: "💻", title: "Modern Stack", desc: "React + FastAPI" },
+    { title: "Network Visualization", desc: "Interactive topology display" },
+    { title: "Building Layout", desc: "Office network distribution" },
+    { title: "Multiple Algorithms", desc: "A*, BFS, DFS, UCS support" },
+    { title: "Real-time Updates", desc: "Live traffic monitoring" },
+    { title: "Optimal Routing", desc: "Smart path finding" },
+    { title: "Modern Stack", desc: "React + FastAPI" },
   ];
 
   const techStack = [
@@ -99,7 +95,6 @@ function About() {
           <div className="features-grid">
             {features.map((feature, idx) => (
               <div key={idx} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
                 <h3>{feature.title}</h3>
                 <p>{feature.desc}</p>
               </div>
@@ -109,11 +104,11 @@ function About() {
 
         {/* Team Section */}
         <section className="about-section">
-          <h2 className="section-title">👥 Project Team</h2>
+          <h2 className="section-title">Project Team</h2>
           <div className="authors-grid">
             {authors.map((author, idx) => (
               <div key={idx} className="author-card">
-                <div className="author-avatar">{author.emoji}</div>
+                <div className="author-avatar">{author.role.charAt(0)}</div>
                 <h3 className="author-name">{author.name}</h3>
                 <p className="author-nickname">"{author.nickname}"</p>
                 <p className="author-role">{author.role}</p>

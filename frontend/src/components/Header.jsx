@@ -8,7 +8,6 @@ function Header() {
       <div className="header-content">
         <div className="header-left">
           <h1 className="project-title">
-            <span className="title-icon">🌐</span>
             Smart Internet Path Finder
           </h1>
           <p className="project-subtitle">Intelligent Network Routing Agent</p>
@@ -16,10 +15,10 @@ function Header() {
 
         <nav className="header-nav">
           <Link to="/" className="nav-link active">
-            🏠 Dashboard
+            Dashboard
           </Link>
           <Link to="/about" className="nav-link">
-            ℹ️ About Project
+            About Project
           </Link>
         </nav>
       </div>

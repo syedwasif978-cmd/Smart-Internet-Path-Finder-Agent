@@ -17,11 +17,11 @@ function ControlPanel({
 }) {
   return (
     <div className="control-panel">
-      <div className="panel-header">⚙️ Control Center</div>
+      <div className="panel-header">Routing Command Center</div>
 
       {/* Start Router Selection */}
       <div className="form-group">
-        <label className="form-label">🚀 Source Router</label>
+        <label className="form-label">Source Router</label>
         <select
           className="form-select"
           value={start}
@@ -31,7 +31,7 @@ function ControlPanel({
           <option value="">Select starting router...</option>
           {nodes.map((node) => (
             <option key={node} value={node}>
-              🔷 {node}
+              {node}
             </option>
           ))}
         </select>
@@ -39,7 +39,7 @@ function ControlPanel({
 
       {/* Goal Router Selection */}
       <div className="form-group">
-        <label className="form-label">🎯 Destination Router</label>
+        <label className="form-label">Destination Router</label>
         <select
           className="form-select"
           value={goal}
@@ -49,7 +49,7 @@ function ControlPanel({
           <option value="">Select destination router...</option>
           {nodes.map((node) => (
             <option key={node} value={node}>
-              🔷 {node}
+              {node}
             </option>
           ))}
         </select>
@@ -57,7 +57,7 @@ function ControlPanel({
 
       {/* Algorithm Selection */}
       <div className="form-group">
-        <label className="form-label">🧠 Algorithm</label>
+        <label className="form-label">Algorithm</label>
         <select
           className="form-select"
           value={algorithm}
@@ -66,11 +66,11 @@ function ControlPanel({
         >
           {algorithms.map((alg) => (
             <option key={alg} value={alg}>
-              {alg === "auto" && "🔄 Auto (Smart Decision)"}
-              {alg === "bfs" && "📊 BFS (Breadth-First)"}
-              {alg === "dfs" && "🔗 DFS (Depth-First)"}
-              {alg === "ucs" && "⚖️ UCS (Uniform Cost)"}
-              {alg === "astar" && "⭐ A* (Heuristic)"}
+              {alg === "auto" && "Auto (Smart Decision)"}
+              {alg === "bfs" && "BFS (Breadth-First)"}
+              {alg === "dfs" && "DFS (Depth-First)"}
+              {alg === "ucs" && "UCS (Uniform Cost)"}
+              {alg === "astar" && "A* (Heuristic)"}
             </option>
           ))}
         </select>
@@ -88,7 +88,7 @@ function ControlPanel({
             Searching...
           </>
         ) : (
-          "🚀 FIND OPTIMAL PATH"
+          "FIND OPTIMAL PATH"
         )}
       </button>
 
@@ -98,7 +98,7 @@ function ControlPanel({
       {/* Result Display */}
       {result && (
         <div className="result-section">
-          <div className="result-title">✨ Path Found!</div>
+          <div className="result-title">Path Found</div>
 
           <div className="result-item">
             <strong>Algorithm:</strong>

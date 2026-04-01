@@ -4,62 +4,60 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const positionsRef = useRef({}); // Store positions persistently
-  const prevPathRef = useRef(null);
+  const prevGraphRef = useRef(null);
   const [positions, setPositions] = useState({});
   const [hoveredNode, setHoveredNode] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 400 });
+  const [trafficLevels, setTrafficLevels] = useState({});
+  const [layout, setLayout] = useState('circle'); // circle or tree
 
   // Get only path nodes if result exists, otherwise empty
   const pathNodes = result?.path || [];
-  
-  // Initialize positions for nodes only when path changes
+
+  // Initialize positions for all nodes when graph or nodes change
   useEffect(() => {
-    // Only recalculate if path actually changed
-    const pathKey = pathNodes.sort().join("-");
-    if (pathKey === prevPathRef.current && Object.keys(positionsRef.current).length > 0) {
-      return;
-    }
-
-    if (pathNodes.length === 0) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Get actual canvas size from container
+    // Force a consistent canvas height to avoid it shifting down
     const container = containerRef.current;
-    if (container) {
-      const { width, height } = container.getBoundingClientRect();
-      setCanvasSize({ width: width - 20, height: height - 80 });
-      canvas.width = width - 20;
-      canvas.height = height - 80;
-    }
+    const targetHeight = 520; // match building visualization height so panels align
+    const targetWidth = container ? Math.max(500, container.getBoundingClientRect().width - 20) : 800;
+    setCanvasSize({ width: targetWidth, height: targetHeight });
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
 
     const width = canvas.width;
     const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    
-    // Arrange path nodes in a horizontal line for clarity
+
+    // Circle layout for all nodes
     const newPositions = {};
-    const nodeCount = pathNodes.length;
-    const spacing = (width - 100) / Math.max(nodeCount - 1, 1);
-    
-    pathNodes.forEach((node, idx) => {
-      const x = 50 + idx * spacing;
-      const y = height / 2;
-      
-      newPositions[node] = {
-        x: Math.max(40, Math.min(width - 40, x)),
-        y: Math.max(40, Math.min(height - 40, y))
-      };
+    const nodeList = nodes && nodes.length ? nodes : Object.keys(graph || {});
+    const n = nodeList.length || 1;
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = Math.min(width, height) / 2 - 80;
+
+    nodeList.forEach((node, i) => {
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+      newPositions[node] = { x, y };
     });
 
-    // Store in ref and update state
     positionsRef.current = newPositions;
     setPositions(newPositions);
-    prevPathRef.current = pathNodes.sort().join("-");
-  }, [pathNodes]);
+    prevGraphRef.current = JSON.stringify(graph || {});
+
+    // Generate a simple traffic level per node (for visualization)
+    const t = {};
+    nodeList.forEach((node) => {
+      const r = Math.random();
+      t[node] = r < 0.6 ? 'low' : r < 0.9 ? 'medium' : 'high';
+    });
+    setTrafficLevels(t);
+  }, [nodes, JSON.stringify(graph)]);
 
   // Handle window resize
   useEffect(() => {
@@ -95,128 +93,132 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     // Track drawn edges to prevent duplicates
     const drawnEdges = new Set();
 
-    // Draw edges ONLY for path nodes
-    if (Object.keys(graph).length > 0 && pathNodes.length > 0) {
-      // Only draw edges between consecutive path nodes
+    // Draw ALL edges first (low-opacity) so the full topology is visible
+    if (Object.keys(graph).length > 0) {
+      Object.keys(graph).forEach((u) => {
+        const nbrs = graph[u] || {};
+        Object.keys(nbrs).forEach((v) => {
+          // draw each undirected edge only once
+          if (!positions[u] || !positions[v]) return;
+          if (u > v) return; // simple dedupe
+
+          const fromPos = positions[u];
+          const toPos = positions[v];
+          const weight = nbrs[v];
+
+          const dx = toPos.x - fromPos.x;
+          const dy = toPos.y - fromPos.y;
+          const angle = Math.atan2(dy, dx);
+
+          const nodeRadius = 30;
+          const startX = fromPos.x + Math.cos(angle) * nodeRadius;
+          const startY = fromPos.y + Math.sin(angle) * nodeRadius;
+          const endX = toPos.x - Math.cos(angle) * nodeRadius;
+          const endY = toPos.y - Math.sin(angle) * nodeRadius;
+
+          // color by weight
+          ctx.beginPath();
+          ctx.strokeStyle = getEdgeColor(weight, false);
+          ctx.lineWidth = 2;
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+        });
+      });
+    }
+
+    // Highlight the chosen path with thicker colored edges
+    if (pathNodes && pathNodes.length > 0) {
       for (let i = 0; i < pathNodes.length - 1; i++) {
         const from = pathNodes[i];
         const to = pathNodes[i + 1];
-
         if (!positions[from] || !positions[to]) continue;
         if (!graph[from] || !graph[from][to]) continue;
 
         const weight = graph[from][to];
         const fromPos = positions[from];
         const toPos = positions[to];
-
-        // Calculate edge angle
         const dx = toPos.x - fromPos.x;
         const dy = toPos.y - fromPos.y;
         const angle = Math.atan2(dy, dx);
-        const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Shorten line to not overlap with nodes (radius 30)
         const nodeRadius = 30;
         const startX = fromPos.x + Math.cos(angle) * nodeRadius;
         const startY = fromPos.y + Math.sin(angle) * nodeRadius;
         const endX = toPos.x - Math.cos(angle) * nodeRadius;
         const endY = toPos.y - Math.sin(angle) * nodeRadius;
 
-        // Draw edge line
+        // Draw highlighted edge
         ctx.beginPath();
-        ctx.strokeStyle = "#2d8659";
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#ff6f00"; // highlight color (orange)
+        ctx.lineWidth = 6;
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Draw arrow head at end
-        const arrowSize = 15;
+        // Arrow head
+        const arrowSize = 12;
         ctx.beginPath();
-        ctx.fillStyle = "#2d8659";
+        ctx.fillStyle = "#ff6f00";
         ctx.moveTo(endX, endY);
-        ctx.lineTo(endX - arrowSize * Math.cos(angle - Math.PI / 6), endY - arrowSize * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(endX - arrowSize * Math.cos(angle + Math.PI / 6), endY - arrowSize * Math.sin(angle + Math.PI / 6));
+        ctx.lineTo(endX - arrowSize * Math.cos(angle - Math.PI / 7), endY - arrowSize * Math.sin(angle - Math.PI / 7));
+        ctx.lineTo(endX - arrowSize * Math.cos(angle + Math.PI / 7), endY - arrowSize * Math.sin(angle + Math.PI / 7));
         ctx.closePath();
         ctx.fill();
-
-        // Draw weight label
-        const midX = (startX + endX) / 2;
-        const midY = (startY + endY) / 2;
-        
-        // Offset label perpendicularly from the edge to avoid overlap
-        const offset = 20;
-        const labelX = midX - Math.sin(angle) * offset;
-        const labelY = midY + Math.cos(angle) * offset;
-        
-        // Draw background box for readability
-        const labelText = weight.toFixed(1);
-        ctx.font = "bold 13px 'Arial', sans-serif";
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 14;
-        const padding = 4;
-        
-        // Draw background
-        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-        ctx.fillRect(
-          labelX - textWidth / 2 - padding,
-          labelY - textHeight / 2 - padding,
-          textWidth + padding * 2,
-          textHeight + padding * 2
-        );
-        
-        // Draw border around label
-        ctx.strokeStyle = "rgba(45, 134, 89, 0.5)";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(
-          labelX - textWidth / 2 - padding,
-          labelY - textHeight / 2 - padding,
-          textWidth + padding * 2,
-          textHeight + padding * 2
-        );
-        
-        // Draw text
-        ctx.fillStyle = "#2d8659";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(labelText, labelX, labelY);
       }
     }
 
-    // Draw nodes
-    pathNodes.forEach((node) => {
+    // Draw all nodes (visible before search). Color by traffic and highlight path nodes.
+    Object.keys(positions).forEach((node) => {
       const pos = positions[node];
       if (!pos) return;
 
       const isStart = node === start;
       const isGoal = node === goal;
+      const isInPath = pathNodes.includes(node);
+
+      // determine node color (traffic influences fill)
+      let fillColor = getNodeColor(node, isInPath, isStart, isGoal, hoveredNode);
 
       // Draw circle
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2);
-      
-      if (isStart) {
-        ctx.fillStyle = "#3a9f6d"; // Bright green for start
-      } else if (isGoal) {
-        ctx.fillStyle = "#1a4d32"; // Dark green for goal
-      } else {
-        ctx.fillStyle = "#2d8659"; // Regular green for path nodes
-      }
-      
+      ctx.fillStyle = fillColor;
       ctx.fill();
 
       // Draw border
-      ctx.strokeStyle = "#1a4d32";
+      ctx.strokeStyle = getBorderColor(node, isInPath, isStart, isGoal);
       ctx.lineWidth = 3;
       ctx.stroke();
 
       // Draw label
-      ctx.font = "bold 16px Arial";
+      ctx.font = "bold 14px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "white";
       ctx.fillText(node, pos.x, pos.y);
+
+      // Draw traffic density bar beneath the node
+      const traffic = trafficLevels[node] || 'low';
+      const barWidth = 48;
+      const barHeight = 8;
+      const barX = pos.x - barWidth / 2;
+      const barY = pos.y + 36; // below circle
+
+      // background
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+      // filled portion
+      let pct = 0.33;
+      if (traffic === 'low') pct = 0.33;
+      if (traffic === 'medium') pct = 0.66;
+      if (traffic === 'high') pct = 1.0;
+      ctx.fillStyle = traffic === 'low' ? '#4caf50' : traffic === 'medium' ? '#ffc107' : '#f44336';
+      ctx.fillRect(barX, barY, barWidth * pct, barHeight);
+      // border
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
     });
 
     function getEdgeColor(weight, isInPath) {
@@ -282,17 +284,21 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
   };
 
   return (
-    <div className="visualization-container" ref={containerRef}>
+    <div className="visualization-container" ref={containerRef} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="panel-header">🔗 Network Topology</div>
       <canvas
         ref={canvasRef}
         onMouseMove={handleCanvasHover}
         onMouseLeave={handleCanvasLeave}
+        width={canvasSize.width}
+        height={canvasSize.height}
         style={{
           cursor: hoveredNode ? "pointer" : "default",
           flex: 1,
           borderRadius: 10,
           border: "1px solid rgba(76, 175, 80, 0.2)",
+          display: 'block',
+          backgroundColor: 'rgba(232, 245, 242, 0.1)',
         }}
       />
       <div style={{ marginTop: 15, fontSize: 12, color: "#4caf50" }}>

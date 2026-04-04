@@ -1,38 +1,41 @@
 from collections import deque
-import heapq
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 
 def bfs(graph, start: str, goal: str) -> Tuple[List[str], float, int]:
     """
-    Dijkstra-like shortest path using edge weights.
-    Kept under the `bfs` name for compatibility but it now returns
-    the least-traffic path (min total edge weight).
+    Breadth-First Search — FIFO queue, explores level by level.
+    Ignores edge weights for expansion order.
+    Returns the path with the fewest hops (not necessarily least cost).
+    Path cost is calculated as the sum of edge weights along the found path.
     """
     if start == goal:
         return [start], 0.0, 1
 
-    frontier = [(0.0, [start])]
-    visited_costs = {start: 0.0}
+    queue = deque([[start]])
+    visited = {start}
     nodes_explored = 0
 
-    while frontier:
-        cost, path = heapq.heappop(frontier)
+    while queue:
+        path = queue.popleft()
         current = path[-1]
-
-        # skip if we already found a better cost to this node
-        if cost > visited_costs.get(current, float('inf')):
-            continue
-
         nodes_explored += 1
 
-        if current == goal:
-            return path, cost, nodes_explored
+        for neighbor in graph.neighbors(current):
+            if neighbor in visited:
+                continue
 
-        for neighbor, edge_cost in graph.neighbors(current).items():
-            new_cost = cost + edge_cost
-            if new_cost < visited_costs.get(neighbor, float('inf')):
-                visited_costs[neighbor] = new_cost
-                heapq.heappush(frontier, (new_cost, path + [neighbor]))
+            new_path = path + [neighbor]
+
+            if neighbor == goal:
+                nodes_explored += 1
+                cost = sum(
+                    graph.edge_weight(new_path[i], new_path[i + 1])
+                    for i in range(len(new_path) - 1)
+                )
+                return new_path, cost, nodes_explored
+
+            visited.add(neighbor)
+            queue.append(new_path)
 
     return [], float('inf'), nodes_explored

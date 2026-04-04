@@ -1,81 +1,79 @@
-/* ===== Sleek top app header ===== */
+/* Header.css */
 .app-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  width: 100%;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  margin-bottom: 20px;
+  padding: 16px 0;
 }
 
 .header-content {
-  width: min(1320px, 100%);
-  margin: 0 auto;
-  padding: 14px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
 }
 
 .header-left {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .project-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: #0f6360;
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
+  color: var(--primary-purple);
+  margin: 0;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--primary-purple), var(--mauve));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .project-subtitle {
-  color: #52636f;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .header-nav {
   display: flex;
+  gap: 24px;
   align-items: center;
-  gap: 10px;
 }
 
 .nav-link {
+  position: relative;
   font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
   text-decoration: none;
-  border: 1px solid transparent;
-  padding: 8px 14px;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+  padding: 8px 16px;
+  border-radius: 99px;
+  transition: color 0.2s ease;
 }
 
-.nav-link:hover {
-  background: #e1f5f1;
-  color: #0f736d;
-  border-color: #bbece8;
+.nav-link:hover, .nav-link.active {
+  color: var(--primary-purple);
 }
 
-.nav-link.active {
-  background: #12b0a1;
-  color: #ffffff;
-  border-color: #0f7f74;
-}
-
-@media (max-width: 1024px) {
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px 14px;
+@media (prefers-reduced-motion: reduce) {
+  .nav-link {
+    transition: none;
   }
-  .header-nav {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
+}
+
+/* Optional: remove divider if glassmorphism looks better without it */
+.header-divider {
+  display: none;
 }

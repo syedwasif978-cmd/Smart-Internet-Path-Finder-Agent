@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from pydantic import BaseModel, Field
 
@@ -15,3 +15,4 @@ class FindPathResponse(BaseModel):
     cost: float
     nodes_explored: int
     message: str
+    algorithm_comparison: Optional[Dict[str, Any]] = None

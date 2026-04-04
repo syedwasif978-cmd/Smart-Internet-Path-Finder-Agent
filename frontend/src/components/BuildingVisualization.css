@@ -2,13 +2,10 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  padding: 20px;
+  background: transparent;
+  padding: 0;
   gap: 20px;
   overflow-y: auto;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .building-visualization::-webkit-scrollbar {
@@ -20,21 +17,21 @@
 }
 
 .building-visualization::-webkit-scrollbar-thumb {
-  background: rgba(26, 122, 122, 0.4);
+  background: rgba(148, 106, 139, 0.4);
   border-radius: 3px;
 }
 
 .building-visualization::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 122, 122, 0.6);
+  background: rgba(148, 106, 139, 0.6);
 }
 
 .panel-header {
   font-size: 18px;
   font-weight: 700;
-  color: #0f7f74;
+  color: #946a8b;
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #ecfdf5;
+  border-bottom: 2px solid #f5f0f5;
   font-family: 'Poppins', sans-serif;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -47,15 +44,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f8fffe;
-  border: 1px solid #dbe4ee;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
   border-radius: 12px;
   overflow: visible;
-  box-shadow: 0 4px 12px rgba(15, 127, 116, 0.08);
   margin-bottom: 10px;
   aspect-ratio: auto;
-  /* Constrain the image so it doesn't dominate the layout */
-  max-width: 680px;
+  max-width: 100%;
+  max-height: 550px;
   margin-left: auto;
   margin-right: auto;
   padding: 8px;
@@ -66,10 +62,10 @@
   height: auto;
   display: block;
   border-radius: 12px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
   max-width: 100%;
-  max-height: none;
-  /* make the visible image slightly smaller relative to the container for breathing room */
+  max-height: 530px;
+  object-fit: contain;
   box-sizing: border-box;
   padding: 6px;
 }
@@ -87,7 +83,7 @@
 .router-position-wrapper {
   position: absolute;
   pointer-events: auto;
-  transition: transform 0.12s ease;
+  transition: transform 0.1s ease;
 }
 
 /* Make router markers more visible */
@@ -103,14 +99,23 @@
 
 /* Router overlay styling */
 .path-router-overlay {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1)) !important;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
 }
 
 .path-router-overlay:hover {
-  transform: scale(1.2);
-  filter: drop-shadow(0 4px 12px rgba(15, 127, 116, 0.3)) !important;
-  z-index: 20 !important;
+  transform: scale(1.15);
+  filter: drop-shadow(0 4px 12px rgba(148, 106, 139, 0.25));
+  z-index: 20;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path-router-overlay {
+    transition: none;
+  }
+  .path-router-overlay:hover {
+    transform: none;
+  }
 }
 
 /* Blinking star animation */
@@ -126,7 +131,15 @@
 }
 
 .path-star {
-  animation: blinkStar 0.6s ease-in-out infinite !important;
+  animation: blinkStar 0.8s ease-in-out infinite !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path-star {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
 }
 
 /* Pulse halo animation for hover */
@@ -147,13 +160,13 @@
   flex-wrap: wrap;
   gap: 16px;
   padding: 16px 18px;
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 12px;
   font-size: 12px;
-  color: #2d2d2d;
+  color: var(--text-dark);
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .legend-item {

@@ -1,43 +1,40 @@
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 
 def dfs(graph, start: str, goal: str) -> Tuple[List[str], float, int]:
     """
-    Depth-first branch-and-bound search that explores paths recursively
-    and returns the least-traffic path (minimum total edge weight).
-    This explores the graph but prunes when the current path cost
-    already exceeds the best known cost.
+    Depth-First Search — explores as deep as possible before backtracking.
+    Returns the FIRST complete path found, which is NOT necessarily optimal.
+    This correctly models DFS behaviour: commit to the first deep branch.
     """
-    best_path: List[str] = []
-    best_cost = float('inf')
-    nodes_explored = 0
+    nodes_explored = [0]
+    found_path: List[List[str]] = []   # mutable container so inner fn can write it
 
-    def visit(path: List[str], cost_so_far: float, visited: set):
-        nonlocal best_path, best_cost, nodes_explored
-
+    def visit(path: List[str], visited: set) -> bool:
         current = path[-1]
-        nodes_explored += 1
-
-        # Prune if cost already worse than best
-        if cost_so_far >= best_cost:
-            return
+        nodes_explored[0] += 1
 
         if current == goal:
-            # Found a complete path
-            if cost_so_far < best_cost:
-                best_cost = cost_so_far
-                best_path = path.copy()
-            return
+            found_path.append(path[:])
+            return True                       # stop on first hit
 
-        for neighbor, w in graph.neighbors(current).items():
-            if neighbor in visited:
-                continue
-            visited.add(neighbor)
-            visit(path + [neighbor], cost_so_far + (w or 0), visited)
-            visited.remove(neighbor)
+        for neighbor in graph.neighbors(current):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                if visit(path + [neighbor], visited):
+                    return True               # propagate early exit
+                visited.discard(neighbor)    # backtrack only until goal found
 
-    visit([start], 0.0, {start})
+        return False
 
-    if best_path:
-        return best_path, best_cost, nodes_explored
-    return [], float('inf'), nodes_explored
+    visit([start], {start})
+
+    if found_path:
+        path = found_path[0]
+        cost = sum(
+            graph.edge_weight(path[i], path[i + 1])
+            for i in range(len(path) - 1)
+        )
+        return path, cost, nodes_explored[0]
+
+    return [], float('inf'), nodes_explored[0]

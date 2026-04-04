@@ -1,9 +1,11 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
+import Background from "./components/Background";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import About from "./components/About";
+import LandingSection from "./components/LandingSection";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -22,7 +24,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "20px", color: "red", backgroundColor: "#f0f0f0" }}>
+        <div style={{ padding: "20px", color: "red", backgroundColor: "var(--soft-ivory)", zIndex: 100, position: 'relative' }}>
           <h1>Something went wrong</h1>
           <p>{this.state.error?.toString()}</p>
           <details style={{ whiteSpace: "pre-wrap" }}>
@@ -40,13 +42,14 @@ function App() {
     <ErrorBoundary>
       <Router>
         <div className="app-container">
-          <div className="dynamic-background"></div>
-          
+          <Background />
           <Header />
-          
           <Routes>
             <Route path="/" element={
-              <Dashboard />
+              <>
+                <LandingSection />
+                <Dashboard />
+              </>
             } />
             <Route path="/about" element={
               <About />

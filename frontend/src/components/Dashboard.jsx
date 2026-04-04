@@ -3,6 +3,8 @@ import axios from "axios";
 import ControlPanel from "./ControlPanel";
 import NetworkVisualization from "./NetworkVisualization";
 import BuildingVisualization from "./BuildingVisualization";
+import AlgorithmComparison from "./AlgorithmComparison";
+import ScrollReveal from "./ScrollReveal";
 
 const API_BASE = "/api";
 
@@ -17,39 +19,26 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [graphUpdated, setGraphUpdated] = useState(0);
 
-  // Load initial node data
   useEffect(() => {
-    console.log("Dashboard mounted, loading data...");
     loadNodeData();
-    
-    // Set up real-time polling every 2 seconds
     const interval = setInterval(() => {
       loadNodeData();
     }, 2000);
-
-    return () => {
-      console.log("Dashboard unmounting");
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  // Refresh graph data when result changes
   useEffect(() => {
     if (result) {
-      console.log("Result updated, reloading nodes");
       loadNodeData();
     }
   }, [graphUpdated]);
 
   async function loadNodeData() {
     try {
-      console.log("Fetching nodes and graph from", API_BASE);
       const [nodeResp, graphResp] = await Promise.all([
         axios.get(`${API_BASE}/nodes`),
         axios.get(`${API_BASE}/graph`),
       ]);
-      console.log("Nodes received:", nodeResp.data);
-      console.log("Graph received:", graphResp.data);
       setNodes(nodeResp.data);
       setGraph(graphResp.data);
       if (!start && nodeResp.data.length > 0) {
@@ -57,7 +46,6 @@ function Dashboard() {
         setGoal(nodeResp.data[nodeResp.data.length - 1]);
       }
     } catch (err) {
-      console.error("Error loading data:", err);
       setError("Failed to load network data: " + (err.message || err));
     }
   }
@@ -89,43 +77,63 @@ function Dashboard() {
     }
   };
 
-  console.log("Dashboard rendering with nodes:", nodes, "error:", error);
-
   return (
     <div className="app-content">
       {/* Left Control Panel */}
-      <ControlPanel
-        nodes={nodes}
-        start={start}
-        setStart={setStart}
-        goal={goal}
-        setGoal={setGoal}
-        algorithm={algorithm}
-        setAlgorithm={setAlgorithm}
-        onRunAgent={runAgent}
-        loading={loading}
-        error={error}
-        result={result}
-      />
-
-      {/* Right Visualization Panel */}
-      <div className="visualization-panel">
-        {/* Office Building Visualization */}
-        <BuildingVisualization
-          graph={graph}
-          result={result}
-          start={start}
-          goal={goal}
-        />
-
-        {/* Network Graph Visualization */}
-        <NetworkVisualization
+      <ScrollReveal delay={0.1} style={{ flex: '0 0 240px', minWidth: 0 }}>
+        <ControlPanel
           nodes={nodes}
-          graph={graph}
-          result={result}
           start={start}
+          setStart={setStart}
           goal={goal}
+          setGoal={setGoal}
+          algorithm={algorithm}
+          setAlgorithm={setAlgorithm}
+          onRunAgent={runAgent}
+          loading={loading}
+          error={error}
+          result={result}
         />
+      </ScrollReveal>
+
+      <div className="visualization-panel">
+
+        {/* Building Visualization - proportional flex */}
+        <div style={{ flex: '2', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <ScrollReveal delay={0.2} className="visualization-container glass-card" style={{ flex: 1, padding: '14px' }}>
+            <BuildingVisualization
+              graph={graph}
+              result={result}
+              start={start}
+              goal={goal}
+            />
+          </ScrollReveal>
+        </div>
+
+        {/* Search Result Tree */}
+        <div style={{ flex: '2', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <ScrollReveal delay={0.3} className="visualization-container glass-card" style={{ flex: 1, padding: '14px' }}>
+            <NetworkVisualization
+              nodes={nodes}
+              graph={graph}
+              result={result}
+              start={start}
+              goal={goal}
+            />
+          </ScrollReveal>
+        </div>
+
+        {/* Algorithm Comparison Table */}
+        {result && (
+          <div style={{ flex: '3', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <ScrollReveal delay={0.4} className="visualization-container glass-card" style={{ flex: 1, padding: '14px' }}>
+              <AlgorithmComparison
+                result={result}
+                selectedAlgorithm={algorithm}
+              />
+            </ScrollReveal>
+          </div>
+        )}
       </div>
     </div>
   );

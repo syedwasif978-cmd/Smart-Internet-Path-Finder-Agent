@@ -1,28 +1,27 @@
-/* Styles for the search result tree in NetworkVisualization */
+/* Styles for the search result tree in NetworkVisualization - Purple Theme */
 .nv-empty {
   padding: 18px;
-  color: #445;
+  color: var(--text-muted);
   font-size: 18px;
   font-weight: 600;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
-  border: 1px solid #e3f0fb;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 10px;
   text-align: center;
 }
 .nv-empty-sub {
   font-size: 13px;
-  color: #6b7b86;
+  color: var(--text-muted);
   margin-top: 6px;
 }
 
 .nv-tree-container {
   margin-top: 8px;
-  background: linear-gradient(170deg, #fcfeff 0%, #f3fbff 100%);
-  border: 1px solid #d7eaf6;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
   padding: 14px;
-  box-shadow: 0 8px 18px rgba(10, 40, 60, 0.06);
-  max-height: calc(100vh - 320px);
+  max-height: 420px;
   overflow: auto;
 }
 
@@ -41,7 +40,7 @@
   top: 12px;
   bottom: 12px;
   width: 2px;
-  background: linear-gradient(#cbe8ff, #9ecff5);
+  background: linear-gradient(var(--muted-lavender), var(--mauve));
   border-radius: 2px;
   opacity: 0.95;
 }
@@ -52,29 +51,31 @@
   gap: 12px;
   padding: 10px 12px;
   margin-bottom: 10px;
-  background: linear-gradient(90deg, #ffffff, #f9fdff);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
   border-radius: 10px;
-  border: 1px solid rgba(14, 45, 83, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   position: relative;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
   cursor: pointer;
 }
 .nv-tree-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(11, 38, 56, 0.08);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 24px rgba(148, 106, 139, 0.08);
 }
 
 .nv-badge {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00b6ff, #0056d6);
+  background: linear-gradient(135deg, #946a8b, #7a5472);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  box-shadow: 0 6px 14px rgba(4, 45, 88, 0.14);
+  box-shadow: 0 6px 14px rgba(148, 106, 139, 0.15);
   position: relative;
   margin-left: -8px;
   z-index: 2;
@@ -92,28 +93,28 @@
   font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #073b4c;
+  color: #2d2d3d;
   letter-spacing: 0.2px;
 }
 .nv-node-meta {
   display: flex;
   gap: 10px;
   align-items: center;
-  color: #3b5360;
+  color: #6b5b72;
   font-size: 13px;
 }
 
-.nv-cost { color: #52707d; font-weight: 600; }
-.nv-cost-val { color: #ff6f00; font-weight: 800; margin-left: 6px; }
+.nv-cost { color: #8b7b99; font-weight: 600; }
+.nv-cost-val { color: #c9759a; font-weight: 800; margin-left: 6px; }
 
-.nv-traffic-pill { padding: 6px 8px; border-radius: 999px; font-weight: 700; font-size: 12px; color: #fff; box-shadow: 0 6px 10px rgba(10,40,60,0.06); }
-.nv-traffic-pill.low { background: linear-gradient(90deg,#6ed37a,#2fb14d); }
-.nv-traffic-pill.medium { background: linear-gradient(90deg,#ffd166,#ffb020); }
-.nv-traffic-pill.high { background: linear-gradient(90deg,#ff7a7a,#ff3b3b); }
+.nv-traffic-pill { padding: 6px 8px; border-radius: 999px; font-weight: 700; font-size: 12px; color: #fff; box-shadow: 0 6px 10px rgba(148, 106, 139, 0.08); }
+.nv-traffic-pill.low { background: linear-gradient(90deg, #a8d5a8, #6b9a6b); }
+.nv-traffic-pill.medium { background: linear-gradient(90deg, #e8c39a, #d4a574); }
+.nv-traffic-pill.high { background: linear-gradient(90deg, #d4a3a3, #b87a7a); }
 
-.nv-start .nv-badge { background: linear-gradient(135deg,#6ddf8a,#1e8f3a); }
-.nv-goal .nv-badge { background: linear-gradient(135deg,#ffb366,#ff6f00); }
-.nv-inpath { border-left: 4px solid rgba(255,111,0,0.12); }
+.nv-start .nv-badge { background: linear-gradient(135deg, #8ecc7d, #5a9a42); }
+.nv-goal .nv-badge { background: linear-gradient(135deg, #dcc8a3, #c9a768); }
+.nv-inpath { border-left: 4px solid rgba(201, 117, 154, 0.12); }
 
 /* badge pop animation */
 .nv-tree-item:hover .nv-badge { animation: nv-badge-pop 420ms cubic-bezier(.2,.9,.3,1); }
@@ -136,10 +137,10 @@
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 12px solid rgba(255,111,0,0.95);
+  border-bottom: 12px solid rgba(201, 117, 154, 0.95);
   z-index: 1;
   opacity: 0.95;
-  filter: drop-shadow(0 6px 8px rgba(255,111,0,0.08));
+  filter: drop-shadow(0 6px 8px rgba(201, 117, 154, 0.08));
   animation: nv-arrow-flow 1400ms ease-in-out infinite;
 }
 
@@ -148,4 +149,5 @@
   50% { transform: translateX(-50%) translateY(0px); opacity: 1; }
   100% { transform: translateX(-50%) translateY(3px); opacity: 0.22; }
 }
+
 

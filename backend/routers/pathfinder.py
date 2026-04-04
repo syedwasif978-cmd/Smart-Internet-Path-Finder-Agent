@@ -32,6 +32,30 @@ def choose_algorithm(choice: str, graph: NetworkGraph, start: str, goal: str):
     return ucs.ucs(graph, start, goal), "UCS"
 
 
+def get_algorithm_comparison(graph: NetworkGraph, start: str, goal: str):
+    comparison = {}
+    
+    algorithms = [
+        ('bfs', bfs.bfs),
+        ('dfs', dfs.dfs),
+        ('ucs', ucs.ucs),
+        ('astar', astar.astar),
+    ]
+    
+    for algo_name, algo_func in algorithms:
+        try:
+            path, cost, nodes_explored = algo_func(graph, start, goal)
+            comparison[algo_name] = {
+                'path': path,
+                'cost': cost,
+                'nodes_explored': nodes_explored,
+            }
+        except:
+            comparison[algo_name] = {'path': [], 'cost': 0, 'nodes_explored': 0}
+    
+    return comparison
+
+
 @router.post("/find-path", response_model=FindPathResponse)
 def find_path(request: FindPathRequest):
     start = request.start
@@ -49,16 +73,20 @@ def find_path(request: FindPathRequest):
     if not path:
         raise HTTPException(status_code=404, detail="No path found")
 
+    algorithm_comparison = get_algorithm_comparison(graph, start, goal)
     update_weights(graph, path)
     graph.persist(GRAPH_FILE)
 
-    return FindPathResponse(
+    response = FindPathResponse(
         algorithm=algo_name,
         path=path,
         cost=cost,
         nodes_explored=nodes_explored,
         message="Path computed and traffic updated",
+        algorithm_comparison=algorithm_comparison,
     )
+    
+    return response
 
 
 @router.get("/nodes")

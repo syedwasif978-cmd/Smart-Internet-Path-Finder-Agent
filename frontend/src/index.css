@@ -1,7 +1,25 @@
-/* Import Aesthetic Fonts */
+/* ===== Modern Light-Mode Purple Theme ===== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Global Styles */
+:root {
+  /* Purple Palette */
+  --primary-purple: #946A8B;
+  --muted-lavender: #C9B6DA;
+  --mauve: #B08EAA;
+  --blush-pink: #F2D5D9;
+  --soft-ivory: #FCFAFC;
+  
+  /* Text Colors */
+  --text-dark: #2A2530;
+  --text-muted: #6b5b72;
+  --text-light: #FDFBFD;
+  
+  /* Glass Colors */
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px 0 rgba(148, 106, 139, 0.15);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -13,20 +31,16 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #ffffff;
-  color: #1a1a1a;
+  background: var(--soft-ivory);
+  color: var(--text-dark);
   font-weight: 400;
   letter-spacing: 0.3px;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
 }
@@ -34,5 +48,106 @@ code {
 html, body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+}
+
+/* Base Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  color: var(--primary-purple);
+}
+
+/* ===== Universal Glassmorphism Utilities ===== */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 24px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 20px 0 rgba(148, 106, 139, 0.1);
+  border-radius: 20px;
+  transition: box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+/* iOS Shimmer and Tilt illusion on hover */
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px 0 rgba(148, 106, 139, 0.2);
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .glass-card {
+    transition: none;
+  }
+  .glass-card:hover {
+    transform: none;
+  }
+}
+
+.glass-nav {
+  background: rgba(252, 250, 252, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Buttons ===== */
+.btn-glass {
+  background: linear-gradient(135deg, rgba(148, 106, 139, 0.8) 0%, rgba(176, 142, 170, 0.8) 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(148, 106, 139, 0.3);
+  transition: box-shadow 0.2s ease;
+}
+
+.btn-glass:hover {
+  box-shadow: 0 6px 20px rgba(148, 106, 139, 0.5), inset 0 0 10px rgba(255,255,255,0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-glass {
+    transition: none;
+  }
+}
+
+/* ===== Scroll Animation ===== */
+@keyframes scroll-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-animate-in {
+  animation: scroll-fade-up 0.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-animate-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

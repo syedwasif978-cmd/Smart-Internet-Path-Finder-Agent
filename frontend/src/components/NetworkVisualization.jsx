@@ -523,8 +523,9 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
     };
 
     return (
-      <div className="nv-tree-container">
-        <ul className="nv-tree" aria-label="Search result tree">
+      <div style={{ overflow: "auto", maxHeight: "100%" }}>
+        <div className="nv-tree-container">
+          <ul className="nv-tree" aria-label="Search result tree">
           {nodeItems.map((n, i) => {
             const isStart = i === 0;
             const isGoal = i === nodeItems.length - 1;
@@ -544,7 +545,7 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
                 <div className="nv-node">
                   <div className="nv-node-name">{n.id}</div>
                   <div className="nv-node-meta">
-                    <div className="nv-cost">Cost: <span className="nv-cost-val">{n.cost}</span></div>
+                    <div className="nv-cost">Cost: <span className="nv-cost-val">{Number(n.cost).toFixed(2)}</span></div>
                     <div className={`nv-traffic-pill ${trafficClass}`}>{n.traffic}%</div>
                   </div>
                 </div>
@@ -552,6 +553,7 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
             );
           })}
         </ul>
+      </div>
       </div>
     );
   };
@@ -569,27 +571,29 @@ function NetworkVisualization({ nodes, graph, result, start, goal }) {
       </div>
       <div
         style={{
-          padding: "13px",
+          padding: "10px",
           display: "grid",
-          gridTemplateColumns: "repeat(5, minmax(120px, 1fr))",
-          gap: "10px",
+          gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+          gap: "4px",
           marginBottom: "10px",
           borderRadius: "10px",
-          border: "1px solid #c9dff1",
-          background: "linear-gradient(160deg, rgba(243,248,253,0.95) 0%, rgba(225,241,253,0.95) 100%)",
-          boxShadow: "0 8px 16px rgba(14,45,83,0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.4)",
+          background: "rgba(255, 255, 255, 0.2)",
+          backdropFilter: "blur(8px)",
+          fontSize: "0.75rem",
+          wordBreak: "break-word"
         }}
       >
-        <div style={{ color: "#2073a8", fontWeight: 700 }}>Algorithm</div>
-        <div style={{ color: "#2073a8", fontWeight: 700 }}>Source</div>
-        <div style={{ color: "#2073a8", fontWeight: 700 }}>Destination</div>
-        <div style={{ color: "#2073a8", fontWeight: 700 }}>Cost</div>
-        <div style={{ color: "#2073a8", fontWeight: 700 }}>Explored</div>
-        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{summaryLabel}</div>
-        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{start || "-"}</div>
-        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{goal || "-"}</div>
-        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{result?.cost ?? "-"}</div>
-        <div style={{ color: "#1b4f66", fontWeight: 600 }}>{result?.nodes_explored ?? "-"}</div>
+        <div style={{ color: "var(--primary-purple)", fontWeight: 700 }}>Alg</div>
+        <div style={{ color: "var(--primary-purple)", fontWeight: 700 }}>Source</div>
+        <div style={{ color: "var(--primary-purple)", fontWeight: 700 }}>Destination</div>
+        <div style={{ color: "var(--primary-purple)", fontWeight: 700 }}>Cost</div>
+        <div style={{ color: "var(--primary-purple)", fontWeight: 700 }}>Explored</div>
+        <div style={{ color: "var(--text-dark)", fontWeight: 600 }}>{summaryLabel}</div>
+        <div style={{ color: "var(--text-dark)", fontWeight: 600 }}>{start || "-"}</div>
+        <div style={{ color: "var(--text-dark)", fontWeight: 600 }}>{goal || "-"}</div>
+        <div style={{ color: "var(--text-dark)", fontWeight: 600 }}>{result?.cost != null ? Number(result.cost).toFixed(2) : "-"}</div>
+        <div style={{ color: "var(--text-dark)", fontWeight: 600 }}>{result?.nodes_explored ?? "-"}</div>
       </div>
 
       {renderPathTree()}

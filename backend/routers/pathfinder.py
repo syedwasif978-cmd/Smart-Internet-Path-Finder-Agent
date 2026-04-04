@@ -75,7 +75,12 @@ def find_path(request: FindPathRequest):
 
     algorithm_comparison = get_algorithm_comparison(graph, start, goal)
     update_weights(graph, path)
-    graph.persist(GRAPH_FILE)
+    
+    # Persist graph changes (fails silently in serverless environments)
+    try:
+        graph.persist(GRAPH_FILE)
+    except (OSError, IOError):
+        pass  # Read-only file system in serverless environments
 
     response = FindPathResponse(
         algorithm=algo_name,

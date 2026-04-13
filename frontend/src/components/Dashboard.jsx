@@ -78,7 +78,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="app-content">
+    <div id="dashboard-section" className="app-content">
       {/* Left Control Panel */}
       <ScrollReveal delay={0.1} style={{ flex: '0 0 240px', minWidth: 0 }}>
         <ControlPanel

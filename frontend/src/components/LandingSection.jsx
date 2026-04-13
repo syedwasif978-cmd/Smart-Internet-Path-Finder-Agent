@@ -4,6 +4,15 @@ import ScrollReveal from "./ScrollReveal";
 import "./LandingSection.css";
 
 function LandingSection() {
+  const scrollToDashboard = () => {
+    const element = document.getElementById('dashboard-section');
+    if (element) {
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
+
   return (
     <div className="landing-section">
       <ScrollReveal>
@@ -25,7 +34,7 @@ function LandingSection() {
                 className="btn-primary-landing"
                 whileHover={{ scale: 1.05, boxShadow: "0 15px 35px rgba(148, 106, 139, 0.4)" }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => document.getElementById('dashboard-section')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={scrollToDashboard}
               >
                 <span className="btn-icon">⚡</span>
                 Try Simulation
@@ -34,7 +43,7 @@ function LandingSection() {
                 className="btn-secondary-landing"
                 whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 0.8)" }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => document.getElementById('dashboard-section')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={scrollToDashboard}
               >
                 <span className="btn-icon">▶</span>
                 Watch Demo

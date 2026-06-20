@@ -259,7 +259,8 @@ function BuildingVisualization({ graph, result, start, goal }) {
         className="building-image-container"
         style={{ cursor: "default" }}
       >
-        <img ref={imgRef} src="/building.png" alt="Building Layout" className="building-image" onLoad={handleImageLoad} style={{ width: `${scale}%`, maxWidth: "100%", userSelect: "none", WebkitUserDrag: "none" }} />
+        <div className="building-image-wrapper" style={{ position: "relative", width: `${scale}%`, maxWidth: "100%" }}>
+        <img ref={imgRef} src="/building.png" alt="Building Layout" className="building-image" onLoad={handleImageLoad} style={{ width: "100%", display: "block", userSelect: "none", WebkitUserDrag: "none" }} />
 
         {/* Overlay routers on the image */}
         <div className="routers-overlay">
@@ -361,6 +362,7 @@ function BuildingVisualization({ graph, result, start, goal }) {
               </React.Fragment>
             );
           })}
+        </div>
         </div>
       </div>
 
